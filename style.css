@@ -1,0 +1,79 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: "GearsNStuff";
+    src: url(".\\fonts\\StuckedInGears-J21n.ttf");
+}
+
+@font-face {
+    font-family: "Enraged";
+    src: url(".\\fonts\\Roadrage-owgBd.otf");
+}
+
+#canvas1 {
+    border: 5px solid blue;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: coral;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+body {
+    font-family: "century gothic";
+    text-align: center;
+    background-image: linear-gradient(to bottom left, pink, purple,);
+}
+
+h1 {
+    color:blueviolet;
+}
+
+p b {
+    color:blueviolet;
+}
+
+a:hover {
+    color: orange;
+}
+
+#gameplaylist {
+    text-align: left;
+    list-style: circle inside none;
+}
+
+#playbutton {
+    border-radius: 2px 5px 5px 5px;
+}
+
+button:hover {
+    background-color: lightgreen;
+}
+
+#titleStart {
+    font-family: "GearsNStuff";
+    font-size: 50px;
+    background: radial-gradient(circle, slategray, lightgrey);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                -webkit-text-stroke-width: 0.1px;
+                -webkit-text-stroke-color: darkslategray;
+}
+
+#titleEnd {
+    font-family: "Enraged";
+    font-size: 50px;
+    background: linear-gradient(to top, black 10%, orangered 60%);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+    -webkit-text-stroke-width: 0.1px;
+    -webkit-text-stroke-color: black;
+}
