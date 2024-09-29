@@ -6,12 +6,12 @@
 
 @font-face {
     font-family: "GearsNStuff";
-    src: url(".\\fonts\\StuckedInGears-J21n.ttf");
+    src: url("./fonts/StuckedInGears-J21n.ttf");
 }
 
 @font-face {
     font-family: "Enraged";
-    src: url(".\\fonts\\Roadrage-owgBd.otf");
+    src: url("./fonts/Roadrage-owgBd.otf");
 }
 
 #canvas1 {
@@ -76,4 +76,8 @@ button:hover {
                 color: transparent;
     -webkit-text-stroke-width: 0.1px;
     -webkit-text-stroke-color: black;
+}
+
+#layer1, #layer2, #layer3, #layer4, #player {
+    display: none;
 }

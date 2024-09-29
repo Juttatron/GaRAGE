@@ -39,8 +39,12 @@ window.addEventListener('load', function(){
             this.height = 120;
             this.x = 20;
             this.y = 100;
+            this.frameX = 0;
+            this.frameY = 0;
+            this.maxFrame = 3;
             this.speedy = 0;
             this.speedx = 1;
+            this.image = document.getElementById('player');
         }
 
         update() {
@@ -50,23 +54,27 @@ window.addEventListener('load', function(){
                 this.x = 20;
             }
 
-            if (this.y > (canvas.height - this.height)) {
+            if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
                 this.speedy = -1;
             }
-            else if (this.y < 0) {
+            else if (this.game.keys.includes('ArrowDown') && (this.y < (canvas.height - this.height))) {
                 this.speedy = 1;
+            }
+            else {
+                this.speedy = 0;
             }
 
-            if (this.game.keys.includes('ArrowUp')) {
-                this.speedy = -1;
+            if (this.frameX < this.maxFrame){
+                this.frameX++; 
             }
-            else if (this.game.keys.includes('ArrowDown')) {
-                this.speedy = 1;
+            else {
+                this.frameX = 0;
             }
         }
 
         draw(context) {
-            context.fillRect(this.x, this.y, this.width, this.height);
+            //context.fillRect(this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
     }
 
