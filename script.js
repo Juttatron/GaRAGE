@@ -117,7 +117,7 @@ window.addEventListener('load', function(){
     
     // animation loop
     function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //ctx.clearRect(0, 0, canvas.width, canvas.height);
         game.update();
         game.draw(ctx);
         requestAnimationFrame(animate);
