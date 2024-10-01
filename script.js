@@ -41,7 +41,7 @@ window.addEventListener('load', function(){
             this.y = 100;
             this.frameX = 0;
             this.frameY = 0;
-            this.maxFrame = 2;
+            this.maxFrame = 1;
             this.speedy = 0;
             this.speedx = 1;
             this.image = document.getElementById('player');
