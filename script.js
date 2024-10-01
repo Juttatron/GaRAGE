@@ -41,7 +41,8 @@ window.addEventListener('load', function(){
             this.y = 100;
             this.frameX = 0;
             this.frameY = 0;
-            this.maxFrame = 3;
+            this.maxFrame = 2;
+            this.fps = 0;
             this.speedy = 0;
             this.speedx = 1;
             this.image = document.getElementById('player');
@@ -63,9 +64,13 @@ window.addEventListener('load', function(){
             else {
                 this.speedy = 0;
             }
-
+            
             if (this.frameX < this.maxFrame){
-                this.frameX++; 
+                this.fps++;
+                if (this.fps === 8) {
+                    this.frameX++;
+                    this.fps = 0; 
+                } 
             }
             else {
                 this.frameX = 0;
