@@ -53,6 +53,7 @@ window.addEventListener('load', function(){
             this.x += this.speedx;
             if (this.x > (canvas.width - this.width)) {
                 this.x = 20;
+                this.game.fuel = 100;
             }
 
             if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
@@ -74,6 +75,7 @@ window.addEventListener('load', function(){
             }
             else {
                 this.frameX = 0;
+                this.game.fuel = this.game.fuel -1;
             }
         }
 
@@ -96,7 +98,19 @@ window.addEventListener('load', function(){
     }
 
     class UI {
-
+        constructor (game){
+            this.game = game;
+            this.width = 190;
+            this.height = 120;
+            this.x = 500;
+            this.y = 400;
+        }
+        
+        fuelGauge(context) {
+                //context.fillRect(this.x, this.y, this.game.fuel, this.height);
+                context.fillStyle = 'green';
+                context.fillRect(this.x, this.y, this.game.fuel, 20);
+        }
     }
     
     class Game {
@@ -105,15 +119,19 @@ window.addEventListener('load', function(){
             this.height = height;
             this.player = new Player(this);
             this.input = new InputHandler(this);
+            this.UI = new UI(this);
             this.keys = [];
+            this.fuel = 100;
         }
 
         update() {
             this.player.update();
+            console.log(this.fuel);
         }
 
         draw(context) {
             this.player.draw(context);
+            this.UI.fuelGauge(context);
         }
 
     }
