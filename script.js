@@ -46,15 +46,21 @@ window.addEventListener('load', function(){
             this.speedy = 0;
             this.speedx = 1;
             this.image = document.getElementById('player');
-            this.fuel = 100;
+            this.defaultFuel = 100;
+            this.fuel = this.defaultFuel;
+            this.armour = 0;
+            this.seats = 0;
+            this.tank = 0;
+            this.engine = 0;
+            this.tires = 0; 
         }
 
         update() {
             this.y += this.speedy;
             this.x += this.speedx;
-            if (this.x > (canvas.width - this.width)) {
+            if (this.fuel < 1) {
                 this.x = 20;
-                this.fuel = 100;
+                this.fuel = this.defaultFuel; // (re)move this later
             }
 
             if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
@@ -76,7 +82,7 @@ window.addEventListener('load', function(){
             }
             else {
                 this.frameX = 0;
-                this.fuel = this.fuel -1;
+                this.fuel += -1;
             }
         }
 
@@ -86,8 +92,33 @@ window.addEventListener('load', function(){
         }
     }
 
-    class Enemy {
+    class Mutant {
+        constructor(game) {
+            this.game = game;
+            this.x = this.game.width;
+            this.speedx = Math.random() * -1.5 - 0.5;
+            this.markedForDeletion = false;
+        }
 
+        update() {
+            this.x += this.speedx;
+            if (this.x + this.width < 0) this.markedForDeletion = true;
+        }
+
+        draw(context) {
+            context.fillStyle = 'red';
+            context.fillRect(this.x, this.y, this.width, this.height);
+        }
+
+    }
+
+    class uglyMutant extends Mutant {
+        constructor(game) {
+            super(game);
+            this.width = 228 * 0.2;
+            this.height = 169 *0.2;
+            this.y = Math.random() * (this.game.height * 0.9 - this.height);
+        }
     }
 
     class Layer {
@@ -102,16 +133,20 @@ window.addEventListener('load', function(){
         constructor (game){
             this.game = game;
             this.player = this.game.player;
-            this.width = 190;
-            this.height = 120;
+            this.fontSize = 20;
+            this.fontFamily = 'Enraged';
             this.x = 500;
             this.y = 400;
         }
         
+        draw() {
+
+        }
+
         fuelGauge(context) {
                 //context.fillRect(this.x, this.y, this.game.fuel, this.height);
-                context.fillStyle = 'green';
-                context.fillRect(this.x, this.y, this.player.fuel, 20);
+                context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
+                context.fillRect(this.x, this.y, this.player.fuel, 30);
         }
     }
     
@@ -122,31 +157,72 @@ window.addEventListener('load', function(){
             this.player = new Player(this);
             this.input = new InputHandler(this);
             this.UI = new UI(this);
+            this.mutants = [];
+            this.mutantTimer = 0;
+            this.mutantInterval = 1000;
             this.keys = [];
-            this.fuel = 100;
+            this.endRun = false;
+            this.gameOver = false;
+            //this.fuel = 100;
         }
 
-        update() {
+        update(deltaTime) {
             this.player.update();
-            console.log(this.fuel);
+            //console.log(this.player.fuel);
+            this.mutants.forEach(mutant => { 
+               mutant.update();
+               if (this.checkCollision(this.player, mutant)) {
+                    mutant.markedForDeletion = true;
+               } 
+            });
+            this.mutants = this.mutants.filter(mutant => !mutant.markedForDeletion);
+            if (this.mutantTimer > this.mutantInterval && !this.gameOver) {
+                this.addMutant();
+                this.mutantTimer = 0;
+                //console.log(this.mutants);
+            }
+            else {
+                this.mutantTimer += deltaTime;
+            }
         }
 
         draw(context) {
             this.player.draw(context);
             this.UI.fuelGauge(context);
+            this.mutants.forEach(mutant => { 
+                mutant.draw(context); 
+             });
         }
 
+        addMutant() {
+            this.mutants.push(new uglyMutant(this));
+        }
+
+        checkCollision(rect1, rect2) {
+            return (
+                rect1.x < rect2.x + rect2.width && 
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y
+            )
+        }
     }
 
     const game = new Game(canvas.width, canvas.height);
     
+    let lastTime = 0;
+
     // animation loop
-    function animate() {
+    function animate(timeStamp) {
+        // delta time
+        const deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
+        //console.log(deltaTime);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        game.update();
+        game.update(deltaTime);
         game.draw(ctx);
         requestAnimationFrame(animate);
     }
 
-    animate();
+    animate(0);
 });
