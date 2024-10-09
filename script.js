@@ -46,6 +46,7 @@ window.addEventListener('load', function(){
             this.speedy = 0;
             this.speedx = 1;
             this.image = document.getElementById('player');
+            this.fuel = 100;
         }
 
         update() {
@@ -53,7 +54,7 @@ window.addEventListener('load', function(){
             this.x += this.speedx;
             if (this.x > (canvas.width - this.width)) {
                 this.x = 20;
-                this.game.fuel = 100;
+                this.fuel = 100;
             }
 
             if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
@@ -75,7 +76,7 @@ window.addEventListener('load', function(){
             }
             else {
                 this.frameX = 0;
-                this.game.fuel = this.game.fuel -1;
+                this.fuel = this.fuel -1;
             }
         }
 
@@ -100,6 +101,7 @@ window.addEventListener('load', function(){
     class UI {
         constructor (game){
             this.game = game;
+            this.player = this.game.player;
             this.width = 190;
             this.height = 120;
             this.x = 500;
@@ -109,7 +111,7 @@ window.addEventListener('load', function(){
         fuelGauge(context) {
                 //context.fillRect(this.x, this.y, this.game.fuel, this.height);
                 context.fillStyle = 'green';
-                context.fillRect(this.x, this.y, this.game.fuel, 20);
+                context.fillRect(this.x, this.y, this.player.fuel, 20);
         }
     }
     
