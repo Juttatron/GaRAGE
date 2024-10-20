@@ -31,7 +31,7 @@ window.addEventListener('load', function(){
     class Particle {
 
     }
-
+    
     class Player {
         constructor(game) {
             this.game = game;
@@ -52,7 +52,8 @@ window.addEventListener('load', function(){
             this.seats = 0;
             this.tank = 0;
             this.engine = 0;
-            this.tires = 0; 
+            this.tires = 0;
+            this.scrap = 0; 
         }
 
         update() {
@@ -95,15 +96,24 @@ window.addEventListener('load', function(){
     class Mutant {
         constructor(game) {
             this.game = game;
+            this.player = this.game.player;
             this.x = this.game.width;
             this.speedx = Math.random() * -1.5 - 0.5;
             this.markedForDeletion = false;
             this.smooshed = false;
+            this.dead = false;
+            //this.scrap = 2;
         }
 
         update() {
             this.x += this.speedx;
             if (this.x + this.width < 0) this.markedForDeletion = true;
+            if (this.smooshed) {
+                if (!this.dead) {
+                    this.dead = true;
+                    this.player.scrap += this.scrap;
+                }
+            }
         }
 
         draw(context) {
@@ -116,7 +126,6 @@ window.addEventListener('load', function(){
                 context.fillRect(this.x, this.y, this.width, this.height);
             }    
         }
-
     }
 
     class uglyMutant extends Mutant {
@@ -125,6 +134,7 @@ window.addEventListener('load', function(){
             this.width = 228 * 0.2;
             this.height = 169 *0.2;
             this.y = Math.random() * (this.game.height * 0.9 - this.height);
+            this.scrap = Math.floor(Math.random() * 3) + 1;;
         }
     }
 
@@ -144,6 +154,7 @@ window.addEventListener('load', function(){
             this.fontFamily = 'Enraged';
             this.x = 500;
             this.y = 400;
+            this.scrapCount = document.getElementById('scrapCount');
         }
         
         draw() {
@@ -154,6 +165,11 @@ window.addEventListener('load', function(){
                 //context.fillRect(this.x, this.y, this.game.fuel, this.height);
                 context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
                 context.fillRect(this.x, this.y, this.player.fuel, 30);
+        }
+
+        scrapCounter(context) {
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillText("Scrap:" + this.player.scrap, 20, 40);
         }
     }
     
@@ -180,6 +196,7 @@ window.addEventListener('load', function(){
                mutant.update();
                if (this.checkCollision(this.player, mutant)) {
                     mutant.smooshed = true;
+                    //this.player.scrap += mutant.scrap;
                } 
             });
             this.mutants = this.mutants.filter(mutant => !mutant.markedForDeletion);
@@ -196,6 +213,7 @@ window.addEventListener('load', function(){
         draw(context) {
             this.player.draw(context);
             this.UI.fuelGauge(context);
+            this.UI.scrapCounter(context);
             this.mutants.forEach(mutant => { 
                 mutant.draw(context); 
              });
