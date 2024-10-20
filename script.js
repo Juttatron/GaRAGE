@@ -98,6 +98,7 @@ window.addEventListener('load', function(){
             this.x = this.game.width;
             this.speedx = Math.random() * -1.5 - 0.5;
             this.markedForDeletion = false;
+            this.smooshed = false;
         }
 
         update() {
@@ -106,8 +107,14 @@ window.addEventListener('load', function(){
         }
 
         draw(context) {
-            context.fillStyle = 'red';
-            context.fillRect(this.x, this.y, this.width, this.height);
+            if (this.smooshed) {
+                context.fillStyle = 'green';
+                context.fillRect(this.x, this.y+10, this.width, this.height/2);
+            }
+            else {
+                context.fillStyle = 'red';
+                context.fillRect(this.x, this.y, this.width, this.height);
+            }    
         }
 
     }
@@ -172,7 +179,7 @@ window.addEventListener('load', function(){
             this.mutants.forEach(mutant => { 
                mutant.update();
                if (this.checkCollision(this.player, mutant)) {
-                    mutant.markedForDeletion = true;
+                    mutant.smooshed = true;
                } 
             });
             this.mutants = this.mutants.filter(mutant => !mutant.markedForDeletion);
