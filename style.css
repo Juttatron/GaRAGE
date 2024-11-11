@@ -17,7 +17,7 @@
 #canvas1 {
     border: 5px solid blue;
     position: absolute;
-    top: 70%;
+    top: 90%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: coral;
@@ -28,7 +28,7 @@
 #canvas2 {
     border: 5px solid yellow;
     position: absolute;
-    top: 70%;
+    top: 90%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: black;
