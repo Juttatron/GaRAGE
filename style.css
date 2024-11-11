@@ -25,6 +25,17 @@
     max-height: 100%;
 }
 
+#canvas2 {
+    border: 5px solid yellow;
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: black;
+    max-width: 100%;
+    max-height: 100%;
+}
+
 body {
     font-family: "century gothic";
     text-align: center;
@@ -50,6 +61,14 @@ a:hover {
 
 #playbutton {
     border-radius: 2px 5px 5px 5px;
+}
+
+#closeStoryButton {
+    border-radius: 2px 5px 5px 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 button:hover {

@@ -4,6 +4,11 @@ window.addEventListener('load', function(){
     const ctx = canvas.getContext('2d');
     canvas.width = 1500;
     canvas.height = 500;
+    const canvas2 = document.getElementById('canvas2');
+    const ctx2 = canvas2.getContext('2d');
+    canvas2.width = 1500;
+    canvas2.height = 500;
+    const closeStoryButton = document.getElementById("closeStoryButton");
 
     class InputHandler {
         constructor(game) {
@@ -45,7 +50,7 @@ window.addEventListener('load', function(){
             this.fps = 0;
             this.speedy = 0;
             this.speedx = 1;
-            this.image = document.getElementById('player');
+            this.image = document.getElementById('car');
             this.defaultFuel = 100;
             this.fuel = this.defaultFuel;
             this.armour = 0;
@@ -98,6 +103,9 @@ window.addEventListener('load', function(){
             this.game = game;
             this.player = this.game.player;
             this.x = this.game.width;
+            this.frameX = 0;
+            this.frameY = 0;
+            this.fps = 0;
             this.speedx = Math.random() * -1.5 - 0.5;
             this.markedForDeletion = false;
             this.smooshed = false;
@@ -114,16 +122,30 @@ window.addEventListener('load', function(){
                     this.player.scrap += this.scrap;
                 }
             }
+
+            if (this.frameX < this.maxFrame){
+                this.fps++;
+                if (this.fps === 8) {
+                    this.frameX++;
+                    this.fps = 0; 
+                } 
+            }
+            else {
+                this.frameX = 0;
+                this.fuel += -1;
+            }
         }
 
         draw(context) {
             if (this.smooshed) {
-                context.fillStyle = 'green';
-                context.fillRect(this.x, this.y+10, this.width, this.height/2);
+                context.drawImage(this.imageSmooshed, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+                //context.fillStyle = 'green';
+                //context.fillRect(this.x, this.y+10, this.width, this.height/2);
             }
             else {
-                context.fillStyle = 'red';
-                context.fillRect(this.x, this.y, this.width, this.height);
+                context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+                //context.fillStyle = 'red';
+                //context.fillRect(this.x, this.y, this.width, this.height);
             }    
         }
     }
@@ -131,9 +153,13 @@ window.addEventListener('load', function(){
     class uglyMutant extends Mutant {
         constructor(game) {
             super(game);
-            this.width = 228 * 0.2;
-            this.height = 169 *0.2;
+            this.type = 'ugly';
+            this.width = 100;
+            this.height = 60;
             this.y = Math.random() * (this.game.height * 0.9 - this.height);
+            this.maxFrame = 1;
+            this.image = document.getElementById('uglyMutant');
+            this.imageSmooshed = document.getElementById('uglyMutantSmooshed');
             this.scrap = Math.floor(Math.random() * 3) + 1;;
         }
     }
@@ -169,10 +195,33 @@ window.addEventListener('load', function(){
 
         scrapCounter(context) {
             context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillStyle = "blue";
             context.fillText("Scrap:" + this.player.scrap, 20, 40);
+        }
+
+        storyScroll(context) {
+            const x = canvas2.width * 0.5;
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            //context.style.textAlign = "center";
+            context.fillStyle = "yellow";
+            const line1 = context.fillText("10 years ago, an extinction level event called \“The Eruption\”", 10, 40);
+            context.fillText("sent civilization spiralling into a post-apocalyptic nightmare.", 20, 100);
         }
     }
     
+    class Intro {
+        constructor (width, height) {
+            this.width = width;
+            this.height = height;
+            this.UI = new UI(this);
+            this.intro = true;
+        }
+
+        draw(context) {
+            this.UI.storyScroll(context)
+        }
+    }
+
     class Game {
         constructor(width, height) {
             this.width = width;
@@ -232,10 +281,19 @@ window.addEventListener('load', function(){
             )
         }
     }
-
+    
+    const intro = new Intro(canvas2.height, canvas2.width);
     const game = new Game(canvas.width, canvas.height);
     
     let lastTime = 0;
+    //let intro = true;
+    if (intro.intro) {
+        intro.draw(ctx2);
+        closeStoryButton.onclick = function() {
+            canvas2.style.display = "none";
+            intro.intro = false;
+        };
+    }
 
     // animation loop
     function animate(timeStamp) {
