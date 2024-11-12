@@ -200,7 +200,7 @@ window.addEventListener('load', function(){
         }
 
         storyScroll(context) {
-            const x = canvas2.width * 0.5;
+            const x = canvas.width * 0.5;
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             //context.style.textAlign = "center";
             context.fillStyle = "yellow";
@@ -288,7 +288,7 @@ window.addEventListener('load', function(){
     let lastTime = 0;
     //let intro = true;
     if (intro.intro) {
-        intro.draw(ctx2);
+        intro.draw(ctx);
         closeStoryButton.onclick = function() {
             canvas2.style.display = "none";
             intro.intro = false;
@@ -307,5 +307,5 @@ window.addEventListener('load', function(){
         requestAnimationFrame(animate);
     }
 
-    animate(0);
+    //animate(0);
 });
