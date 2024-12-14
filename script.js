@@ -4,10 +4,7 @@ window.addEventListener('load', function(){
     const ctx = canvas.getContext('2d');
     canvas.width = 1500;
     canvas.height = 500;
-    const canvas2 = document.getElementById('canvas2');
-    const ctx2 = canvas2.getContext('2d');
-    canvas2.width = 1500;
-    canvas2.height = 500;
+
     const closeStoryButton = document.getElementById("closeStoryButton");
 
     class InputHandler {
@@ -65,8 +62,9 @@ window.addEventListener('load', function(){
             this.y += this.speedy;
             this.x += this.speedx;
             if (this.fuel < 1) {
-                this.x = 20;
+                //this.x = 20;
                 this.fuel = this.defaultFuel; // (re)move this later
+                this.speedx = 0;
             }
 
             if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
@@ -165,14 +163,22 @@ window.addEventListener('load', function(){
     }
 
     class Layer {
-
+        constructor(game, image, speedModifier) {
+            this.game = game;
+            this.image = image;
+            this.speedModifier = speedModifier;
+            this.width = 1768;
+            this.height = 500;
+            this.x = 0;
+            this.y = 0;
+        }
     }
 
     class Background {
 
     }
 
-    class UI {
+    class RoadUI {
         constructor (game){
             this.game = game;
             this.player = this.game.player;
@@ -181,6 +187,88 @@ window.addEventListener('load', function(){
             this.x = 500;
             this.y = 400;
             this.scrapCount = document.getElementById('scrapCount');
+            this.cHeight = canvas.height; // Start from bottom of the canvas
+            this.lines = []; // Array to store wrapped lines
+        }
+        
+        draw(context) {
+            //fuelGuage
+            context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
+            context.fillRect(this.x, this.y, this.player.fuel, 30);
+
+            //scrapCounter
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillStyle = "blue";
+            context.fillText("Scrap:" + this.player.scrap, 20, 40);
+
+            if (this.game.runEnded) {
+                context.textAlign = "center";
+                let message1 = "Out of Fuel";
+                let message2 = "Scrap:" + this.player.scrap;
+                context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5 - 40);
+                context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 40);
+            }
+        }
+
+        /*fuelGauge(context) {
+                //context.fillRect(this.x, this.y, this.game.fuel, this.height);
+                context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
+                context.fillRect(this.x, this.y, this.player.fuel, 30);
+        }
+
+        scrapCounter(context) {
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillStyle = "blue";
+            context.fillText("Scrap:" + this.player.scrap, 20, 40);
+        }*/
+
+        storyScroll(context) {
+            const x = canvas.width * 0.5;
+            const y = 50;
+            const paraWidth = canvas.width - 400;
+            const lineHeight = 40;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillStyle = "yellow";
+            context.textAlign = "center";
+            const storyP1 = "10 years ago, an extinction level event called \“The Eruption\” sent civilization spiralling into a post-apocalyptic nightmare.";
+            this.wrapText(ctx, storyP1, x, y, paraWidth, lineHeight);
+            const storyP2 = "Geysers of an ancient undiscovered ooze exploded from the ground with volcanic force, throwing thick avalanches of toxic lava and full plumes of mutagenic poison almost everywhere.";
+            this.wrapText(ctx, storyP2, x, y*4, paraWidth, lineHeight);
+            const storyP3 = "The survivors must fight for scrap and keep moving in a world overrun by mutant monsters using every ounce of metal and mettle to reach the end of the road…";
+            this.wrapText(ctx, storyP3, x, y*8, paraWidth, lineHeight);
+        }
+
+        wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            
+            words.forEach(word => {
+                const testLine = line + word + ' ';
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    ctx.fillText(line, x, y); // Draw the line
+                    line = word + ' '; // Start a new line
+                    y += lineHeight; // Move down to the next line
+                } else {
+                    line = testLine; // Add word to the current line
+                }
+            });
+        
+        ctx.fillText(line, x, y); // Draw the last line
+        }
+    }
+
+    class GarageUI {
+        constructor (game){
+            this.game = game;
+            this.player = this.game.player;
+            this.fontSize = 20;
+            this.fontFamily = 'Enraged';
+            this.x = 500;
+            this.y = 400;
+            this.scrapCount = document.getElementById('scrapCount');
+            this.cHeight = canvas.height; // Start from bottom of the canvas
+            this.lines = []; // Array to store wrapped lines
         }
         
         draw() {
@@ -201,11 +289,37 @@ window.addEventListener('load', function(){
 
         storyScroll(context) {
             const x = canvas.width * 0.5;
+            const y = 50;
+            const paraWidth = canvas.width - 400;
+            const lineHeight = 40;
+            context.fillRect(0, 0, canvas.width, canvas.height);
             context.font = this.fontSize*2 + "px " + this.fontFamily;
-            //context.style.textAlign = "center";
             context.fillStyle = "yellow";
-            const line1 = context.fillText("10 years ago, an extinction level event called \“The Eruption\”", 10, 40);
-            context.fillText("sent civilization spiralling into a post-apocalyptic nightmare.", 20, 100);
+            context.textAlign = "center";
+            const storyP1 = "10 years ago, an extinction level event called \“The Eruption\” sent civilization spiralling into a post-apocalyptic nightmare.";
+            this.wrapText(ctx, storyP1, x, y, paraWidth, lineHeight);
+            const storyP2 = "Geysers of an ancient undiscovered ooze exploded from the ground with volcanic force, throwing thick avalanches of toxic lava and full plumes of mutagenic poison almost everywhere.";
+            this.wrapText(ctx, storyP2, x, y*4, paraWidth, lineHeight);
+            const storyP3 = "The survivors must fight for scrap and keep moving in a world overrun by mutant monsters using every ounce of metal and mettle to reach the end of the road…";
+            this.wrapText(ctx, storyP3, x, y*8, paraWidth, lineHeight);
+        }
+
+        wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            
+            words.forEach(word => {
+                const testLine = line + word + ' ';
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    ctx.fillText(line, x, y); // Draw the line
+                    line = word + ' '; // Start a new line
+                    y += lineHeight; // Move down to the next line
+                } else {
+                    line = testLine; // Add word to the current line
+                }
+            });
+        
+        ctx.fillText(line, x, y); // Draw the last line
         }
     }
     
@@ -213,7 +327,7 @@ window.addEventListener('load', function(){
         constructor (width, height) {
             this.width = width;
             this.height = height;
-            this.UI = new UI(this);
+            this.UI = new RoadUI(this);
             this.intro = true;
         }
 
@@ -228,12 +342,12 @@ window.addEventListener('load', function(){
             this.height = height;
             this.player = new Player(this);
             this.input = new InputHandler(this);
-            this.UI = new UI(this);
+            this.RoadUI = new RoadUI(this);
             this.mutants = [];
             this.mutantTimer = 0;
             this.mutantInterval = 1000;
             this.keys = [];
-            this.endRun = false;
+            this.runEnded = false;
             this.gameOver = false;
             //this.fuel = 100;
         }
@@ -257,12 +371,14 @@ window.addEventListener('load', function(){
             else {
                 this.mutantTimer += deltaTime;
             }
+            this.checkFuel() 
         }
 
         draw(context) {
             this.player.draw(context);
-            this.UI.fuelGauge(context);
-            this.UI.scrapCounter(context);
+            //this.RoadUI.fuelGauge(context);
+            //this.RoadUI.scrapCounter(context);
+            this.RoadUI.draw(context);
             this.mutants.forEach(mutant => { 
                 mutant.draw(context); 
              });
@@ -280,9 +396,16 @@ window.addEventListener('load', function(){
                 rect1.y + rect1.height > rect2.y
             )
         }
+
+        checkFuel() {
+            if (this.player.fuel == 0) {
+                this.runEnded = true;
+                intro.intro = true;
+            }
+        }
     }
     
-    const intro = new Intro(canvas2.height, canvas2.width);
+    const intro= new Intro(canvas.width, canvas.height);
     const game = new Game(canvas.width, canvas.height);
     
     let lastTime = 0;
@@ -290,8 +413,8 @@ window.addEventListener('load', function(){
     if (intro.intro) {
         intro.draw(ctx);
         closeStoryButton.onclick = function() {
-            canvas2.style.display = "none";
             intro.intro = false;
+            animate(0);
         };
     }
 
