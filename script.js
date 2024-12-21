@@ -20,6 +20,7 @@ window.addEventListener('load', function(){
             window.addEventListener('keyup', e => {
                 if (this.game.keys.indexOf(e.key) > -1) {
                     this.game.keys.splice(this.game.keys.indexOf(e.key), 1);
+                    game.player.moving = false; // Stop movement on key release
                 }
                 console.log(this.game.keys);
             });
@@ -39,16 +40,21 @@ window.addEventListener('load', function(){
             this.game = game;
             this.width = 190;
             this.height = 120;
-            this.x = 20;
-            this.y = 100;
+            this.x = 50;
+            //this.y = 100;
             this.frameX = 0;
             this.frameY = 0;
             this.maxFrame = 2;
             this.fps = 0;
+            this.currentLane = 2; // Start in the middle lane (lane index 2)
+            this.targetLane = this.currentLane;
+            this.y = this.calculateLaneCenterY(this.currentLane); // Calculate initial y position
+            this.laneSpeed = 2;
+            this.changingLane = false;
             this.speedy = 0;
-            this.speedx = 1;
+            this.speedx = 0;
             this.image = document.getElementById('car');
-            this.defaultFuel = 100;
+            this.defaultFuel = 250;
             this.fuel = this.defaultFuel;
             this.armour = 0;
             this.seats = 0;
@@ -64,17 +70,28 @@ window.addEventListener('load', function(){
             if (this.fuel < 1) {
                 //this.x = 20;
                 this.fuel = this.defaultFuel; // (re)move this later
-                this.speedx = 0;
+                //this.speedx = 0;
             }
 
+            const targetY = this.calculateLaneCenterY(this.targetLane);
+        if (Math.abs(this.y - targetY) > this.laneSpeed) {
+            this.y += this.y < targetY ? this.laneSpeed : -this.laneSpeed;
+        } else {
+            this.y = targetY; // Snap to the target lane if close enough
+            this.currentLane = this.targetLane; // Update current lane only after reaching target
+            this.moving = false; // Stop movement when the target is reached
+        }
+
             if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
-                this.speedy = -1;
+                this.moveUp();
+                //this.speedy = -1;
             }
             else if (this.game.keys.includes('ArrowDown') && (this.y < (canvas.height - this.height))) {
-                this.speedy = 1;
+                this.moveDown();
+                //this.speedy = 1;
             }
             else {
-                this.speedy = 0;
+                //this.speedy = 0;
             }
             
             if (this.frameX < this.maxFrame){
@@ -93,6 +110,27 @@ window.addEventListener('load', function(){
         draw(context) {
             //context.fillRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+        }
+
+        calculateLaneCenterY(laneIndex) {
+            //const canvas = this.game.canvas;
+            const laneStartY = canvas.height * 0.4;
+            const laneHeight = canvas.height * 0.6 / 5;
+            return laneStartY + (laneHeight * laneIndex) + (laneHeight / 2) - (this.height / 2);
+        }
+    
+        moveUp() {
+            if (!this.moving && this.targetLane > 0) {
+                this.targetLane--; // Update target lane
+                this.moving = true; // Start movement
+            }
+        }
+    
+        moveDown() {
+            if (!this.moving && this.targetLane < 4) {
+                this.targetLane++; // Update target lane
+                this.moving = true; // Start movement
+            }
         }
     }
 
@@ -172,10 +210,40 @@ window.addEventListener('load', function(){
             this.x = 0;
             this.y = 0;
         }
+
+        update() {
+            if (this.x <= -this.width) this.x = 0;
+            this.x -= this.game.speed * this.speedModifier;
+        }
+
+        draw(context) {
+            context.drawImage(this.image, this.x, this.y);
+            context.drawImage(this.image, this.x + this.width, this.y);
+        }
     }
 
-    class Background {
 
+    class Background {
+        constructor(game) {
+            this.game = game;
+            this.image1 = document.getElementById("layer1");
+            this.farGround = new Layer(this.game, this.image1, 6);
+            this.image2 = document.getElementById("layer2");
+            this.backGround = new Layer(this.game, this.image2, 4);
+            this.image3 = document.getElementById("layer3");
+            this.midGround = new Layer(this.game, this.image3, 2);
+            this.image4 = document.getElementById("layer4");
+            this.foreGround = new Layer(this.game, this.image4, 1);
+            this.layers = [this.farGround, this.backGround, this.midGround];
+        }
+
+        update() {
+            this.layers.forEach(layer => layer.update());
+        }
+
+        draw(context) {
+            this.layers.forEach(layer => layer.draw(context));
+        }
     }
 
     class RoadUI {
@@ -342,6 +410,7 @@ window.addEventListener('load', function(){
             this.height = height;
             this.player = new Player(this);
             this.input = new InputHandler(this);
+            this.BG = new Background(this);
             this.RoadUI = new RoadUI(this);
             this.mutants = [];
             this.mutantTimer = 0;
@@ -349,12 +418,15 @@ window.addEventListener('load', function(){
             this.keys = [];
             this.runEnded = false;
             this.gameOver = false;
+            this.speed = 1;
             //this.fuel = 100;
         }
 
         update(deltaTime) {
+            this.BG.update();
             this.player.update();
             //console.log(this.player.fuel);
+            this.BG.foreGround.update();
             this.mutants.forEach(mutant => { 
                mutant.update();
                if (this.checkCollision(this.player, mutant)) {
@@ -375,13 +447,16 @@ window.addEventListener('load', function(){
         }
 
         draw(context) {
-            this.player.draw(context);
+            this.BG.draw(context);
+            
             //this.RoadUI.fuelGauge(context);
             //this.RoadUI.scrapCounter(context);
             this.RoadUI.draw(context);
             this.mutants.forEach(mutant => { 
                 mutant.draw(context); 
              });
+             this.player.draw(context);
+             this.BG.foreGround.draw(context);
         }
 
         addMutant() {
@@ -401,8 +476,11 @@ window.addEventListener('load', function(){
             if (this.player.fuel == 0) {
                 this.runEnded = true;
                 intro.intro = true;
+                cancelAnimationFrame(theRoad);
             }
         }
+
+        
     }
     
     const intro= new Intro(canvas.width, canvas.height);
