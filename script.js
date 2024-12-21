@@ -142,11 +142,13 @@ window.addEventListener('load', function(){
             this.frameX = 0;
             this.frameY = 0;
             this.fps = 0;
-            this.speedx = Math.random() * -1.5 - 0.5;
+            this.speedx = 1 * -1.5 - 0.5;
             this.markedForDeletion = false;
             this.smooshed = false;
             this.dead = false;
             //this.scrap = 2;
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
         }
 
         update() {
@@ -174,15 +176,18 @@ window.addEventListener('load', function(){
 
         draw(context) {
             if (this.smooshed) {
-                context.drawImage(this.imageSmooshed, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
-                //context.fillStyle = 'green';
-                //context.fillRect(this.x, this.y+10, this.width, this.height/2);
+                context.drawImage(this.imageSmooshed, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height); 
             }
             else {
                 context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
-                //context.fillStyle = 'red';
-                //context.fillRect(this.x, this.y, this.width, this.height);
             }    
+        }
+
+        calculateLaneCenterY(laneIndex) {
+            //const canvas = this.game.canvas;
+            const laneStartY = canvas.height * 0.4;
+            const laneHeight = canvas.height * 0.6 / 5;
+            return laneStartY + (laneHeight * laneIndex) + (laneHeight / 2) - (this.height / 2);
         }
     }
 
@@ -192,7 +197,9 @@ window.addEventListener('load', function(){
             this.type = 'ugly';
             this.width = 100;
             this.height = 60;
-            this.y = Math.random() * (this.game.height * 0.9 - this.height);
+            //this.y = Math.random() * (this.game.height * 0.9 - this.height);
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
             this.maxFrame = 1;
             this.image = document.getElementById('uglyMutant');
             this.imageSmooshed = document.getElementById('uglyMutantSmooshed');
