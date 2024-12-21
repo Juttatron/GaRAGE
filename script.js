@@ -41,11 +41,6 @@ window.addEventListener('load', function(){
             this.width = 190;
             this.height = 120;
             this.x = 50;
-            //this.y = 100;
-            this.frameX = 0;
-            this.frameY = 0;
-            this.maxFrame = 2;
-            this.fps = 0;
             this.currentLane = 2; // Start in the middle lane (lane index 2)
             this.targetLane = this.currentLane;
             this.y = this.calculateLaneCenterY(this.currentLane); // Calculate initial y position
@@ -53,6 +48,10 @@ window.addEventListener('load', function(){
             this.changingLane = false;
             this.speedy = 0;
             this.speedx = 0;
+            this.frameX = 0;
+            this.frameY = 0;
+            this.maxFrame = 2;
+            this.fps = 0;
             this.image = document.getElementById('car');
             this.defaultFuel = 250;
             this.fuel = this.defaultFuel;
@@ -212,8 +211,8 @@ window.addEventListener('load', function(){
             this.game = game;
             this.image = image;
             this.speedModifier = speedModifier;
-            this.width = 1768;
-            this.height = 500;
+            this.width = this.game.width;
+            this.height = this.game.height;
             this.x = 0;
             this.y = 0;
         }
@@ -224,8 +223,8 @@ window.addEventListener('load', function(){
         }
 
         draw(context) {
-            context.drawImage(this.image, this.x, this.y);
-            context.drawImage(this.image, this.x + this.width, this.y);
+            context.drawImage(this.image, this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, this.x + this.width, this.y, this.width, this.height);
         }
     }
 
@@ -274,7 +273,7 @@ window.addEventListener('load', function(){
             //scrapCounter
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             context.fillStyle = "blue";
-            context.fillText("Scrap:" + this.player.scrap, 20, 40);
+            context.fillText("Scrap:" + this.player.scrap, 100, 40);
 
             if (this.game.runEnded) {
                 context.textAlign = "center";
@@ -436,7 +435,7 @@ window.addEventListener('load', function(){
             this.BG.foreGround.update();
             this.mutants.forEach(mutant => { 
                mutant.update();
-               if (this.checkCollision(this.player, mutant)) {
+               if (this.checkCollision(this.player, mutant) && (this.player.currentLane == mutant.lane)) {
                     mutant.smooshed = true;
                     //this.player.scrap += mutant.scrap;
                } 
