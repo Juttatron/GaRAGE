@@ -40,7 +40,8 @@ window.addEventListener('load', function(){
             this.game = game;
             this.width = 190;
             this.height = 120;
-            this.x = 50;
+            this.x = -this.width; // Start off-screen
+            this.initialX = 100; // Drive to here
             this.currentLane = 2; // Start in the middle lane (lane index 2)
             this.targetLane = this.currentLane;
             this.y = this.calculateLaneCenterY(this.currentLane); // Calculate initial y position
@@ -53,7 +54,7 @@ window.addEventListener('load', function(){
             this.maxFrame = 2;
             this.fps = 0;
             this.image = document.getElementById('car');
-            this.defaultFuel = 250;
+            this.defaultFuel = 40;
             this.fuel = this.defaultFuel;
             this.armour = 0;
             this.seats = 0;
@@ -61,36 +62,41 @@ window.addEventListener('load', function(){
             this.engine = 0;
             this.tires = 0;
             this.scrap = 0; 
+            this.drivingOn = true; // Flag to check if the car is driving on
+            this.driveSpeed = 2; // Speed at which the car enters the screen
         }
 
         update() {
-            this.y += this.speedy;
-            this.x += this.speedx;
+            if (this.drivingOn) {
+                this.x += this.driveSpeed; // Move the car onto the screen
+                if (this.x >= this.initialX) {
+                    this.x = this.initialX; // Stop at the starting position
+                    this.drivingOn = false; // Set the flag to false once the car is on screen
+                }
+            } else {
+                if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
+                    this.moveUp();
+                }
+                else if (this.game.keys.includes('ArrowDown') && (this.y < (canvas.height - this.height))) {
+                    this.moveDown();
+                } else {
+                    // Continue normal movement after the vehicle is fully on screen
+                    this.y += this.speedy;
+                    this.x += this.speedx;
+                }
+            }
+
             if (this.fuel < 1) {
-                //this.x = 20;
-                this.fuel = this.defaultFuel; // (re)move this later
-                //this.speedx = 0;
+                this.fuel = 0;//this.fuel = this.defaultFuel; // (re)move this later
             }
 
             const targetY = this.calculateLaneCenterY(this.targetLane);
-        if (Math.abs(this.y - targetY) > this.laneSpeed) {
-            this.y += this.y < targetY ? this.laneSpeed : -this.laneSpeed;
-        } else {
-            this.y = targetY; // Snap to the target lane if close enough
-            this.currentLane = this.targetLane; // Update current lane only after reaching target
-            this.moving = false; // Stop movement when the target is reached
-        }
-
-            if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
-                this.moveUp();
-                //this.speedy = -1;
-            }
-            else if (this.game.keys.includes('ArrowDown') && (this.y < (canvas.height - this.height))) {
-                this.moveDown();
-                //this.speedy = 1;
-            }
-            else {
-                //this.speedy = 0;
+            if (Math.abs(this.y - targetY) > this.laneSpeed) {
+                this.y += this.y < targetY ? this.laneSpeed : -this.laneSpeed;
+            } else {
+                this.y = targetY; // Snap to the target lane if close enough
+                this.currentLane = this.targetLane; // Update current lane only after reaching target
+                this.moving = false; // Stop movement when the target is reached
             }
             
             if (this.frameX < this.maxFrame){
@@ -107,12 +113,10 @@ window.addEventListener('load', function(){
         }
 
         draw(context) {
-            //context.fillRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
 
         calculateLaneCenterY(laneIndex) {
-            //const canvas = this.game.canvas;
             const laneStartY = canvas.height * 0.4;
             const laneHeight = canvas.height * 0.6 / 5;
             return laneStartY + (laneHeight * laneIndex) + (laneHeight / 2) - (this.height / 2);
@@ -345,56 +349,22 @@ window.addEventListener('load', function(){
             this.lines = []; // Array to store wrapped lines
         }
         
-        draw() {
-
-        }
-
-        fuelGauge(context) {
-                //context.fillRect(this.x, this.y, this.game.fuel, this.height);
-                context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
-                context.fillRect(this.x, this.y, this.player.fuel, 30);
+        draw(context) {
+            context.clearRect(0, 0, this.game.width, this.game.height);
+            context.fillRect(0, 0, game.width, game.height);
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillStyle = "lightgreen";
+            context.textAlign = "left";
+            context.fillText("Scrap:" + game.currentScrap, 20, 40);
+            //this.scrapCounter(context);
         }
 
         scrapCounter(context) {
-            context.font = this.fontSize*2 + "px " + this.fontFamily;
-            context.fillStyle = "blue";
-            context.fillText("Scrap:" + this.player.scrap, 20, 40);
+            //context.font = this.fontSize*2 + "px " + this.fontFamily;
+            //context.fillStyle = "blue";
+            context.fillText("Scrap:" + this.game.currentScrap, 20, 40);
         }
 
-        storyScroll(context) {
-            const x = canvas.width * 0.5;
-            const y = 50;
-            const paraWidth = canvas.width - 400;
-            const lineHeight = 40;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            context.font = this.fontSize*2 + "px " + this.fontFamily;
-            context.fillStyle = "yellow";
-            context.textAlign = "center";
-            const storyP1 = "10 years ago, an extinction level event called \“The Eruption\” sent civilization spiralling into a post-apocalyptic nightmare.";
-            this.wrapText(ctx, storyP1, x, y, paraWidth, lineHeight);
-            const storyP2 = "Geysers of an ancient undiscovered ooze exploded from the ground with volcanic force, throwing thick avalanches of toxic lava and full plumes of mutagenic poison almost everywhere.";
-            this.wrapText(ctx, storyP2, x, y*4, paraWidth, lineHeight);
-            const storyP3 = "The survivors must fight for scrap and keep moving in a world overrun by mutant monsters using every ounce of metal and mettle to reach the end of the road…";
-            this.wrapText(ctx, storyP3, x, y*8, paraWidth, lineHeight);
-        }
-
-        wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            
-            words.forEach(word => {
-                const testLine = line + word + ' ';
-                if (ctx.measureText(testLine).width > maxWidth) {
-                    ctx.fillText(line, x, y); // Draw the line
-                    line = word + ' '; // Start a new line
-                    y += lineHeight; // Move down to the next line
-                } else {
-                    line = testLine; // Add word to the current line
-                }
-            });
-        
-        ctx.fillText(line, x, y); // Draw the last line
-        }
     }
     
     class Intro {
@@ -406,7 +376,7 @@ window.addEventListener('load', function(){
         }
 
         draw(context) {
-            this.UI.storyScroll(context)
+            this.UI.storyScroll(context);
         }
     }
 
@@ -418,6 +388,7 @@ window.addEventListener('load', function(){
             this.input = new InputHandler(this);
             this.BG = new Background(this);
             this.RoadUI = new RoadUI(this);
+            this.garageUI = new GarageUI(this);
             this.mutants = [];
             this.mutantTimer = 0;
             this.mutantInterval = 1000;
@@ -425,6 +396,9 @@ window.addEventListener('load', function(){
             this.runEnded = false;
             this.gameOver = false;
             this.speed = 1;
+            this.gameState = "intro";
+            this.currentScrap = 0;
+            this.animationFrameId = null;
             //this.fuel = 100;
         }
 
@@ -481,29 +455,42 @@ window.addEventListener('load', function(){
         checkFuel() {
             if (this.player.fuel == 0) {
                 this.runEnded = true;
-                intro.intro = true;
-                cancelAnimationFrame(theRoad);
+                this.currentScrap = this.player.scrap;
+                console.log("FuelChecked");
+                console.log(this.animationFrameId); // In animate function
+                console.log(game.animationFrameId);
+                cancelAnimationFrame(this.animationFrameId);
+                console.log("Frame Cancelled: " + this.animationFrameId);
+                setTimeout(this.GarageState, 3000);
             }
         }
 
-        
+        GarageState() {
+            game.gameState = "garage";
+        }
     }
     
-    const intro= new Intro(canvas.width, canvas.height);
+    const intro = new Intro(canvas.width, canvas.height);
+    const garage = new GarageUI(this);
     const game = new Game(canvas.width, canvas.height);
     
     let lastTime = 0;
+    let animationFrameId;
     //let intro = true;
-    if (intro.intro) {
+    if (game.gameState == "intro") {
         intro.draw(ctx);
         closeStoryButton.onclick = function() {
             intro.intro = false;
+            game.gameState = "running";
+            game.runEnded = false;
+            game.player.fuel = game.player.defaultFuel;
             animate(0);
         };
     }
 
     // animation loop
     function animate(timeStamp) {
+        if (game.gameState === "running") {
         // delta time
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
@@ -511,7 +498,13 @@ window.addEventListener('load', function(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         game.update(deltaTime);
         game.draw(ctx);
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
+        game.animationFrameId = animationFrameId;
+        }
+        else if (game.gameState === "garage") {
+            cancelAnimationFrame(animationFrameId);
+            garage.draw(ctx);
+        }
     }
 
     //animate(0);
