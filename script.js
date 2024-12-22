@@ -454,6 +454,7 @@ window.addEventListener('load', function(){
 
         checkFuel() {
             if (this.player.fuel == 0) {
+                this.gameState = "paused";
                 this.runEnded = true;
                 this.currentScrap = this.player.scrap;
                 console.log("FuelChecked");
@@ -461,12 +462,13 @@ window.addEventListener('load', function(){
                 console.log(game.animationFrameId);
                 cancelAnimationFrame(this.animationFrameId);
                 console.log("Frame Cancelled: " + this.animationFrameId);
-                setTimeout(this.GarageState, 3000);
+                setTimeout(this.GarageState.bind(this), 3000);
             }
         }
 
         GarageState() {
-            game.gameState = "garage";
+            this.gameState = "garage";
+            garage.draw(ctx);
         }
     }
     
@@ -503,7 +505,7 @@ window.addEventListener('load', function(){
         }
         else if (game.gameState === "garage") {
             cancelAnimationFrame(animationFrameId);
-            garage.draw(ctx);
+            
         }
     }
 
