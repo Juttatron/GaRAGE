@@ -17,16 +17,29 @@
 #main-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100vh; /* Full viewport height */
+    justify-content: space-between; /* Even spacing between containers */
+    height: auto; /* Full viewport height */
     width: 100%; /* Adjust as needed */
     max-width: 1000px; /* Optional: Set a maximum width */
+    margin: 0 auto; /* Center the container horizontally */
+    box-sizing: border-box; /* Include padding in width/height calculations */
 }
 
 #title-container {
     display: flex;
-    flex: 1;
-    height: 50vh; /* Full viewport height */
+    height: auto;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    overflow: hidden; /* Prevent scrolling */
+    padding: 0 20px; /* Add space around the sides, not the top/bottom */
+    margin: 0; /* Prevent margins from causing extra space */
+}
+
+#info-container {
+    display: flex;
+    height: auto;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
     max-width: 1000px; /* Optional: Set a maximum width */
     overflow: hidden; /* Prevent scrolling */
     padding: 0 20px; /* Add space around the sides, not the top/bottom */
@@ -35,8 +48,9 @@
 
 #game-container {
     display: flex;
-    flex: 4;
-    height: 50vh; /* Full viewport height */
+    height: auto;
+    justify-content: center; /* Center the canvas horizontally */
+    align-items: center; /* Center the canvas vertically */
     overflow: hidden; /* Prevent scrolling */
     padding: 0 20px; /* Add space around the sides, not the top/bottom */
     margin: 0; /* Prevent margins from causing extra space */
@@ -50,6 +64,25 @@
     height: auto; /* Maintain aspect ratio */
     max-height: 100%; /* Prevent it from overflowing the container */
     display: block; /* Ensures no extra space added below canvas */
+}
+
+#gameplaylist {
+    text-align: left;
+    list-style: circle inside none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#gameplaylist li {
+    display: inline-block; /* Makes list items inline */
+    margin-right: 10px; /* Add spacing between items */
+}
+
+#closeStoryButton {
+    border-radius: 2px 5px 5px 5px;
 }
 
 body {
@@ -72,32 +105,9 @@ a:hover {
     color: orange;
 }
 
-#gameplaylist {
-    text-align: left;
-    width: 35%;
-    list-style: circle inside none;
-    position: absolute; /* Position relative to the container */
-    top: 10%; /* Adjust as needed */
-    left: 5%; /* Adjust as needed */
-    padding: 0;
-    margin: 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    box-sizing: border-box; /* Prevent padding from affecting layout */
-}
-
 #playbutton {
     
     border-radius: 2px 5px 5px 5px;
-}
-
-#closeStoryButton {
-    border-radius: 2px 5px 5px 5px;
-    position: absolute;
-    top: 10%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 button:hover {
