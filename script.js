@@ -15,6 +15,9 @@ window.addEventListener('load', function(){
                     && this.game.keys.indexOf(e.key) === -1) {
                     this.game.keys.push(e.key);
                 }
+                if (game.gameState === "running" && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+                    e.preventDefault(); // Prevent the browser from scrolling
+                }
                 console.log(this.game.keys);
             });
             window.addEventListener('keyup', e => {

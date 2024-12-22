@@ -8,46 +8,48 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1><span id="titleStart">Ga</span><span id="titleEnd">RAGE!</span></h1>
-        <p>Welcome to <b>GaRAGE!</b></p>
-        <nav>
-            
-            <button id="playbutton">
-            <a href="#canvas1">
-                Play
-            </a>
-            </button>
-            <button id="closeStoryButton" type="button">GO!</button>
-        </nav>
-    </header>
+    <div id="main-container"></div>
+    <div id="title-container"></div>
+        <header>
+            <h1><span id="titleStart">Ga</span><span id="titleEnd">RAGE!</span></h1>
+            <p>Welcome to <b>GaRAGE!</b></p>
+            <nav>
+                <button id="closeStoryButton" type="button"><a href="#canvas1">GO!</a></button>
+                </button>
+
+            </nav>
+        </header>
+    </div>
     <main>
-        <p>
-            <ul id="gameplaylist">
-                <li>Smoosh Mutants</li>
-                <li>Grab Resources</li>
-                <li>Upgrade Car</li>
-                <li>Rinse Repeat</li>
-            </ul>
-        </p>
-        
-        <canvas id="canvas1" style="z-index: 1"></canvas>
+        <div id="game-container"></div>
+            
+            <p>
+                <ul id="gameplaylist">
+                    <li>Smoosh Mutants</li>
+                    <li>Grab Resources</li>
+                    <li>Upgrade Car</li>
+                    <li>Rinse Repeat</li>
+                </ul>
+            </p>
+                <canvas id="canvas1" style="z-index: 1"></canvas>
+            
+            
+            <script src="script.js"></script>
 
-        <script src="script.js"></script>
-
-        <!--Game Objects-->
-        <!--Characters-->
-        <img id="car" src="./graphics/carmoving.png">
-        <img id="uglyMutant" src="./graphics/uglyMutant.png">
-        <img id="uglyMutantSmooshed" src="./graphics/uglyMutantSmooshed.png">
-        <!--Pickups-->
-        <!--Environments-->
-        <img id="layer1" src="./graphics/layer1.png">
-        <img id="layer2" src="./graphics/layer2.png">
-        <img id="layer3" src="./graphics/layer3.png">
-        <img id="layer4" src="./graphics/layer4.png">
-
+            <!--Game Objects-->
+            <!--Characters-->
+            <img id="car" src="./graphics/carmoving.png">
+            <img id="uglyMutant" src="./graphics/uglyMutant.png">
+            <img id="uglyMutantSmooshed" src="./graphics/uglyMutantSmooshed.png">
+            <!--Pickups-->
+            <!--Environments-->
+            <img id="layer1" src="./graphics/layer1.png">
+            <img id="layer2" src="./graphics/layer2.png">
+            <img id="layer3" src="./graphics/layer3.png">
+            <img id="layer4" src="./graphics/layer4.png">
+        </div>
     </main>
-    <footer></footer>
+    <footer>Justin Phillips</footer>
+</div>
 </body>
 </html>

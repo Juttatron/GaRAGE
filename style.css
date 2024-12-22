@@ -14,21 +14,50 @@
     src: url("./fonts/Roadrage-owgBd.otf");
 }
 
+#main-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh; /* Full viewport height */
+    width: 100%; /* Adjust as needed */
+    max-width: 1000px; /* Optional: Set a maximum width */
+}
+
+#title-container {
+    display: flex;
+    flex: 1;
+    height: 50vh; /* Full viewport height */
+    max-width: 1000px; /* Optional: Set a maximum width */
+    overflow: hidden; /* Prevent scrolling */
+    padding: 0 20px; /* Add space around the sides, not the top/bottom */
+    margin: 0; /* Prevent margins from causing extra space */
+}
+
+#game-container {
+    display: flex;
+    flex: 4;
+    height: 50vh; /* Full viewport height */
+    overflow: hidden; /* Prevent scrolling */
+    padding: 0 20px; /* Add space around the sides, not the top/bottom */
+    margin: 0; /* Prevent margins from causing extra space */
+}
+
 #canvas1 {
     border: 5px solid blue;
-    position: absolute;
-    top: 80%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     background: coral;
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%; /* Adjust as needed */
+    max-width: 1000px; /* Optional: Set a maximum width */
+    height: auto; /* Maintain aspect ratio */
+    max-height: 100%; /* Prevent it from overflowing the container */
+    display: block; /* Ensures no extra space added below canvas */
 }
 
 body {
     font-family: "century gothic";
     text-align: center;
     background-image: linear-gradient(to bottom left, pink, purple,);
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
@@ -45,17 +74,28 @@ a:hover {
 
 #gameplaylist {
     text-align: left;
+    width: 35%;
     list-style: circle inside none;
+    position: absolute; /* Position relative to the container */
+    top: 10%; /* Adjust as needed */
+    left: 5%; /* Adjust as needed */
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    box-sizing: border-box; /* Prevent padding from affecting layout */
 }
 
 #playbutton {
+    
     border-radius: 2px 5px 5px 5px;
 }
 
 #closeStoryButton {
     border-radius: 2px 5px 5px 5px;
     position: absolute;
-    top: 50%;
+    top: 10%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
