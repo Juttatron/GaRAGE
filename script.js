@@ -54,7 +54,7 @@ window.addEventListener('load', function(){
             this.maxFrame = 2;
             this.fps = 0;
             this.image = document.getElementById('car');
-            this.defaultFuel = 40;
+            this.defaultFuel = 125;
             this.fuel = this.defaultFuel;
             this.armour = 0;
             this.seats = 0;
@@ -271,8 +271,9 @@ window.addEventListener('load', function(){
         
         draw(context) {
             //fuelGuage
-            context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
+            context.fillStyle = "rgba(" + (this.player.fuel+1000) + ",0, 0, 1)";
             context.fillRect(this.x, this.y, this.player.fuel, 30);
+            context.fillText("Fuel", this.x - 55, this.y + 25);
 
             //scrapCounter
             context.font = this.fontSize*2 + "px " + this.fontFamily;
@@ -399,6 +400,8 @@ window.addEventListener('load', function(){
             this.gameState = "intro";
             this.currentScrap = 0;
             this.animationFrameId = null;
+            this.fadeAlpha = 0; // Opacity for fade effect
+            this.fadingOut = true; // Track fade direction
             //this.fuel = 100;
         }
 
@@ -428,15 +431,12 @@ window.addEventListener('load', function(){
 
         draw(context) {
             this.BG.draw(context);
-            
-            //this.RoadUI.fuelGauge(context);
-            //this.RoadUI.scrapCounter(context);
-            this.RoadUI.draw(context);
             this.mutants.forEach(mutant => { 
                 mutant.draw(context); 
              });
              this.player.draw(context);
              this.BG.foreGround.draw(context);
+             this.RoadUI.draw(context);
         }
 
         addMutant() {
@@ -457,11 +457,7 @@ window.addEventListener('load', function(){
                 this.gameState = "paused";
                 this.runEnded = true;
                 this.currentScrap = this.player.scrap;
-                console.log("FuelChecked");
-                console.log(this.animationFrameId); // In animate function
-                console.log(game.animationFrameId);
                 cancelAnimationFrame(this.animationFrameId);
-                console.log("Frame Cancelled: " + this.animationFrameId);
                 setTimeout(this.GarageState.bind(this), 3000);
             }
         }
@@ -469,6 +465,28 @@ window.addEventListener('load', function(){
         GarageState() {
             this.gameState = "garage";
             garage.draw(ctx);
+        }
+
+        fade(context, callback) {
+            if (this.fadingOut) {
+                this.fadeAlpha += 0.05; // Increase opacity
+                if (this.fadeAlpha >= 1) {
+                    this.fadingOut = false; // Switch to fade-in
+                    callback(); // Execute transition logic
+                }
+            } else {
+                this.fadeAlpha -= 0.05; // Decrease opacity
+                if (this.fadeAlpha <= 0) {
+                    this.fadeAlpha = 0; // Reset opacity
+                    return true; // Fade complete
+                }
+            }
+            // Draw fade effect
+            context.save();
+            context.fillStyle = `rgba(0, 0, 0, ${this.fadeAlpha})`;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.restore();
+            return false; // Fade still in progress
         }
     }
     
@@ -483,10 +501,33 @@ window.addEventListener('load', function(){
         intro.draw(ctx);
         closeStoryButton.onclick = function() {
             intro.intro = false;
-            game.gameState = "running";
-            game.runEnded = false;
-            game.player.fuel = game.player.defaultFuel;
-            animate(0);
+            game.fadingOut = true; // Start fading out
+            game.fadeAlpha = 0; // Ensure opacity starts at 0
+
+            function fadeAndStartGame() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                intro.draw(ctx); // Keep drawing the current screen during fade
+    
+                const fadeComplete = game.fade(ctx, () => {
+                    // Transition to running state after fade-out
+                    game.gameState = "running";
+                    game.runEnded = false;
+                    game.player.fuel = game.player.defaultFuel;
+                    animate(0); // Start the main game loop
+                });
+    
+                if (!fadeComplete) {
+                    requestAnimationFrame(fadeAndStartGame);
+                }
+            }
+    
+            fadeAndStartGame();
+        
+
+            //game.gameState = "running";
+            //game.runEnded = false;
+            //game.player.fuel = game.player.defaultFuel;
+            //animate(0);
         };
     }
 
