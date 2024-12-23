@@ -56,7 +56,7 @@ window.addEventListener('load', function(){
             this.maxFrame = 2;
             this.fps = 0;
             this.image = document.getElementById('car');
-            this.defaultFuel = 125;
+            this.defaultFuel = 100;
             this.fuel = this.defaultFuel;
             this.armour = 0;
             this.seats = 0;
@@ -430,8 +430,8 @@ window.addEventListener('load', function(){
             context.fillRect(0, 0, game.width, game.height);
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             context.fillStyle = "lightgreen";
-            context.textAlign = "left";
-            context.fillText("Scrap:" + game.currentScrap, 20, 40);
+            //context.textAlign = "left";
+            context.fillText("Scrap:" + game.currentScrap, 100, 40);
             //this.scrapCounter(context);
         }
 
