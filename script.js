@@ -452,6 +452,7 @@ window.addEventListener('load', function(){
         
         draw(context) {
             context.clearRect(0, 0, this.game.width, this.game.height);
+            context.fillStyle = "blue";
             context.fillRect(0, 0, game.width, game.height);
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             context.fillStyle = "lightgreen";
