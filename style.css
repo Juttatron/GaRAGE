@@ -136,6 +136,14 @@ button:hover {
     -webkit-text-stroke-color: black;
 }
 
-#layer1, #layer2, #layer3, #layer4, #car, #uglyMutant, #uglyMutantSmooshed {
+#layer1, #layer2, #layer3, #layer4 {
+    display: none;
+}
+
+#car, #fuelCan {
+    display: none;
+}
+
+#uglyMutant, #uglyMutantSmooshed {
     display: none;
 }

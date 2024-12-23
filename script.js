@@ -10,20 +10,19 @@ window.addEventListener('load', function(){
     class InputHandler {
         constructor(game) {
             this.game = game;
+            //Listen for player to press up or down arrow keys
             window.addEventListener('keydown', e => {
                 if (((e.key === 'ArrowUp') || (e.key === 'ArrowDown'))
                     && this.game.keys.indexOf(e.key) === -1) {
                     this.game.keys.push(e.key);
                 }
-                if (game.gameState === "running" && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
-                    e.preventDefault(); // Prevent the browser from scrolling
-                }
                 console.log(this.game.keys);
             });
+            //Listen for player to stop pressing up or down arroe keys.
             window.addEventListener('keyup', e => {
                 if (this.game.keys.indexOf(e.key) > -1) {
                     this.game.keys.splice(this.game.keys.indexOf(e.key), 1);
-                    game.player.moving = false; // Stop movement on key release
+                    game.player.moving = false; // Stop player lane changing on key release
                 }
                 console.log(this.game.keys);
             });
@@ -176,7 +175,7 @@ window.addEventListener('load', function(){
             }
             else {
                 this.frameX = 0;
-                this.fuel += -1;
+                //this.fuel += -1;
             }
         }
 
@@ -206,12 +205,85 @@ window.addEventListener('load', function(){
             //this.y = Math.random() * (this.game.height * 0.9 - this.height);
             this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
             this.y = this.calculateLaneCenterY(this.lane);
-            this.maxFrame = 1;
+            this.maxFrame = 0;
             this.image = document.getElementById('uglyMutant');
             this.imageSmooshed = document.getElementById('uglyMutantSmooshed');
-            this.scrap = Math.floor(Math.random() * 3) + 1;;
+            this.scrap = Math.floor(Math.random() * 3) + 1;
         }
     }
+
+    class FuelContainer {
+        constructor(game) {
+            this.game = game;
+            this.player = this.game.player;
+            this.x = this.game.width;
+            this.frameX = 0;
+            this.frameY = 0;
+            this.fps = 0;
+            this.speedx = 1 * -1.5 - 0.5;
+            this.markedForDeletion = false;
+            this.collecting = false;
+            this.collected = false;
+            //this.scrap = 2;
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
+        }
+
+        update() {
+            this.x += this.speedx;
+            if (this.x + this.width < 0) this.markedForDeletion = true;
+            if (this.collecting) {
+                if (!this.collected) {
+                    console.log("Old Fuel: " + this.player.fuel);
+                    this.collected = true;
+                    this.player.fuel += this.fuel;
+                    console.log("New Fuel: " + this.player.fuel);
+                }
+            }
+
+            if (this.frameX < this.maxFrame){
+                this.fps++;
+                if (this.fps === 8) {
+                    this.frameX++;
+                    this.fps = 0; 
+                } 
+            }
+            else {
+                this.frameX = 0;
+                //this.fuel += -1;
+            }
+        }
+
+        draw(context) {
+            if (!this.collected) {
+                context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+            }    
+        }
+
+        calculateLaneCenterY(laneIndex) {
+            //const canvas = this.game.canvas;
+            const laneStartY = canvas.height * 0.4;
+            const laneHeight = canvas.height * 0.6 / 5;
+            return laneStartY + (laneHeight * laneIndex) + (laneHeight / 2) - (this.height / 2);
+        }
+    }
+
+    class FuelCan extends FuelContainer {
+        constructor(game) {
+            super(game);
+            this.type = 'can';
+            this.width = 60;
+            this.height = 60;
+            //this.y = Math.random() * (this.game.height * 0.9 - this.height);
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
+            this.maxFrame = 0;
+            this.image = document.getElementById('fuelCan');
+            //this.imageSmooshed = document.getElementById('uglyMutantSmooshed');
+            this.fuel = Math.floor(Math.random() * (50 - 25 + 1) + 25);
+        }
+    }
+
 
     class Layer {
         constructor(game, image, speedModifier) {
@@ -266,7 +338,7 @@ window.addEventListener('load', function(){
             this.fontSize = 20;
             this.fontFamily = 'Enraged';
             this.x = 500;
-            this.y = 400;
+            this.y = 50;
             this.scrapCount = document.getElementById('scrapCount');
             this.cHeight = canvas.height; // Start from bottom of the canvas
             this.lines = []; // Array to store wrapped lines
@@ -275,8 +347,8 @@ window.addEventListener('load', function(){
         draw(context) {
             //fuelGuage
             context.fillStyle = "rgba(" + (this.player.fuel+1000) + ",0, 0, 1)";
-            context.fillRect(this.x, this.y, this.player.fuel, 30);
-            context.fillText("Fuel", this.x - 55, this.y + 25);
+            context.fillRect(500, 10, this.player.fuel, 30);
+            context.fillText("Fuel", 440, 40);
 
             //scrapCounter
             context.font = this.fontSize*2 + "px " + this.fontFamily;
@@ -396,6 +468,10 @@ window.addEventListener('load', function(){
             this.mutants = [];
             this.mutantTimer = 0;
             this.mutantInterval = 1000;
+            this.fuelContainers = [];
+            this.fuelContainerTimer = 0;
+            this.fuelContainerInterval = 8000;
+            this.fuelContainerCounter =0;
             this.keys = [];
             this.runEnded = false;
             this.gameOver = false;
@@ -411,8 +487,8 @@ window.addEventListener('load', function(){
         update(deltaTime) {
             this.BG.update();
             this.player.update();
-            //console.log(this.player.fuel);
             this.BG.foreGround.update();
+            //Spawn mutants
             this.mutants.forEach(mutant => { 
                mutant.update();
                if (this.checkCollision(this.player, mutant) && (this.player.currentLane == mutant.lane)) {
@@ -429,13 +505,35 @@ window.addEventListener('load', function(){
             else {
                 this.mutantTimer += deltaTime;
             }
+            //Spawn fuel containers
+            this.fuelContainers.forEach(container => { 
+                container.update();
+                if (this.checkCollision(this.player, container) && (this.player.currentLane == container.lane)) {
+                     container.collecting = true;
+                     //this.player.scrap += mutant.scrap;
+                } 
+             });
+             this.fuelContainers = this.fuelContainers.filter(container => !container.markedForDeletion);
+             if (this.fuelContainerTimer > this.fuelContainerInterval && !this.gameOver) {
+                 this.addFuelContainer();
+                 this.fuelContainerTimer = 0;
+                 console.log("Containers: " + this.fuelContainers);
+             }
+             else {
+                 this.fuelContainerTimer += deltaTime;
+             }
             this.checkFuel() 
         }
 
         draw(context) {
             this.BG.draw(context);
+            //Draw mutants
             this.mutants.forEach(mutant => { 
                 mutant.draw(context); 
+             });
+            //Draw fuel containers
+            this.fuelContainers.forEach(container => { 
+                container.draw(context); 
              });
              this.player.draw(context);
              this.BG.foreGround.draw(context);
@@ -444,6 +542,10 @@ window.addEventListener('load', function(){
 
         addMutant() {
             this.mutants.push(new uglyMutant(this));
+        }
+
+        addFuelContainer() {
+            this.fuelContainers.push(new FuelCan(this));
         }
 
         checkCollision(rect1, rect2) {
