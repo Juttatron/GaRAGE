@@ -66,9 +66,10 @@ window.addEventListener('load', function(){
             this.scrap = 0; 
             this.drivingOn = true; // Flag to check if the car is driving on
             this.driveSpeed = 2; // Speed at which the car enters the screen
+            this.distance = 0;
         }
 
-        update() {
+        update(deltaTime) {
             if (this.drivingOn) {
                 this.x += this.driveSpeed; // Move the car onto the screen
                 if (this.x >= this.initialX) {
@@ -111,6 +112,11 @@ window.addEventListener('load', function(){
             else {
                 this.frameX = 0;
                 this.fuel += -1;
+                console.log("Player Distance Before:" + this.distance);
+                console.log("gameSpeed:" + this.game.speed);
+                console.log("deltaTime:" + deltaTime);
+                this.distance += this.game.speed * deltaTime / 10; // Convert to seconds
+                console.log("Player Distance After:" + this.distance);
             }
         }
 
@@ -335,6 +341,9 @@ window.addEventListener('load', function(){
         constructor (game){
             this.game = game;
             this.player = this.game.player;
+            //this.totalStageDistance = 500;
+            //this.runDistance = this.game.stageDistance;
+            this.currentDistance = 0;
             this.fontSize = 20;
             this.fontFamily = 'Enraged';
             this.x = 500;
@@ -342,19 +351,40 @@ window.addEventListener('load', function(){
             this.scrapCount = document.getElementById('scrapCount');
             this.cHeight = canvas.height; // Start from bottom of the canvas
             this.lines = []; // Array to store wrapped lines
+            this.trackerIcon = document.getElementById('trackerCar');
+            this.iconWidth = 64; // Adjust size of the icon
+            this.iconHeight = 37;
         }
         
         draw(context) {
             //fuelGuage
+            this.fuelGuageX = (canvas.width - ((canvas.width/100)*50));
             context.fillStyle = "rgba(" + (this.player.fuel+1000) + ",0, 0, 1)";
-            context.fillRect(500, 10, this.player.fuel, 30);
-            context.fillText("Fuel", 440, 40);
+            context.fillRect(this.fuelGuageX, 10, this.player.fuel, 30);
+            context.fillText("Fuel", this.fuelGuageX - 60, 40);
 
             //scrapCounter
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             context.fillStyle = "blue";
             context.fillText("Scrap:" + this.player.scrap, 100, 40);
 
+            //Stage distance tracker
+            this.trackerWidth = 200;
+            this.trackerHeight = 20;
+            this.trackerX = (canvas.width - ((canvas.width/100)*20));
+            this.trackerY = 25;
+            context.fillStyle = 'orange';
+            context.fillText("Stage 1:", this.trackerX - 80, 40);
+            context.fillRect(this.trackerX, this.trackerY, this.trackerWidth, this.trackerHeight);
+            
+
+            // Distance tracker icon
+            this.progress = (this.currentDistance / this.game.stageDistance) * this.trackerWidth;
+            this.iconX = this.trackerX + this.progress - this.iconWidth / 2; // Center the icon on progress
+            this.iconY = this.trackerY - this.iconHeight / 2; // Position icon above the bar
+            context.drawImage(this.trackerIcon, this.iconX, this.iconY, this.iconWidth, this.iconHeight);
+
+            //End run message
             if (this.game.runEnded) {
                 context.textAlign = "center";
                 let message1 = "Out of Fuel";
@@ -364,17 +394,12 @@ window.addEventListener('load', function(){
             }
         }
 
-        /*fuelGauge(context) {
-                //context.fillRect(this.x, this.y, this.game.fuel, this.height);
-                context.fillStyle = "rgba(0, " + (this.player.fuel+100) + ", 0, 1)";
-                context.fillRect(this.x, this.y, this.player.fuel, 30);
+        updateDistance(newDistance) {
+            console.log("newDist:" + newDistance);
+            console.log("currentDistance Before: " + this.currentDistance);
+            this.currentDistance = Math.min(newDistance, this.game.stageDistance); // Cap at total distance
+            console.log("currentDistance After: " + this.currentDistance);
         }
-
-        scrapCounter(context) {
-            context.font = this.fontSize*2 + "px " + this.fontFamily;
-            context.fillStyle = "blue";
-            context.fillText("Scrap:" + this.player.scrap, 20, 40);
-        }*/
 
         storyScroll(context) {
             const x = canvas.width * 0.5;
@@ -482,11 +507,14 @@ window.addEventListener('load', function(){
             this.fadeAlpha = 0; // Opacity for fade effect
             this.fadingOut = true; // Track fade direction
             //this.fuel = 100;
+            this.stageDistance = 500;
+            //this.totalDistance;
         }
+        
 
         update(deltaTime) {
             this.BG.update();
-            this.player.update();
+            this.player.update(deltaTime);
             this.BG.foreGround.update();
             //Spawn mutants
             this.mutants.forEach(mutant => { 
@@ -522,6 +550,8 @@ window.addEventListener('load', function(){
              else {
                  this.fuelContainerTimer += deltaTime;
              }
+             console.log("Distance:" + this.player.distance);
+            this.RoadUI.updateDistance(this.player.distance);
             this.checkFuel() 
         }
 
@@ -611,13 +641,14 @@ window.addEventListener('load', function(){
 
             function fadeAndStartGame() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                intro.draw(ctx); // Keep drawing the current screen during fade
+                //intro.draw(ctx); // Keep drawing the current screen during fade
     
                 const fadeComplete = game.fade(ctx, () => {
                     // Transition to running state after fade-out
                     game.gameState = "running";
                     game.runEnded = false;
                     game.player.fuel = game.player.defaultFuel;
+                    game.player.distance = 0;
                     animate(0); // Start the main game loop
                 });
     
