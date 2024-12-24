@@ -40,19 +40,18 @@ window.addEventListener('load', function(){
             canvas.addEventListener('touchend', (e) => {
                 e.preventDefault(); // Prevent browser motion on swipe
                 touchEndY = e.changedTouches[0].clientY;
-                this.handleSwipe();
+                handleSwipe();
             });
-        }
-
-        //Check touch difference and distance.
-        handleSwipe() {
-            const swipeThreshold = 50; //Minimum distance difference to consider as swipe.
-            const swipeDistance = touchEndY - touchStartY;
-            //Check swipe direction.
-            if (swipeDistance < -swipeThreshold) {
-                game.player.swipeUp();
-            } else if (swipeDistance > swipeThreshold) {
-                game.player.swipeDown();
+            //Check touch difference and distance.
+            function handleSwipe() {
+                const swipeThreshold = 50; // Minimum distance difference to consider as swipe.
+                const swipeDistance = touchEndY - touchStartY;
+                //Check swipe direction.
+                if (swipeDistance < -swipeThreshold) {
+                    game.player.swipeUp();
+                } else if (swipeDistance > swipeThreshold) {
+                    game.player.swipeDown();
+                }
             }
         }
     }
