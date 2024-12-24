@@ -501,7 +501,7 @@ window.addEventListener('load', function(){
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             context.fillStyle = "lightgreen";
             //context.textAlign = "left";
-            context.fillText("Scrap:" + game.currentScrap, 100, 40);
+            context.fillText("Scrap:" + game.player.scrap, 100, 40);
             
             //Fuel tank upgrade.
             this.upgradeTankCost = 50 * game.player.tank;
@@ -519,13 +519,14 @@ window.addEventListener('load', function(){
             // Position the upgrade button
             if (game.player.scrap >= this.upgradeTankCost) {
             this.upgradeTank.disabled = false;            
-            this.upgradeTank.onclick = function() {
-                game.player.tank += 1;
-                game.player.scrap += -50;
-            }
+            this.upgradeTank.onclick = () => {
+                game.player.tank += 1; // Upgrade the tank
+                game.player.scrap -= this.upgradeTankCost; // Deduct the cost
+                this.draw(context); // Redraw the garage UI to reflect updated values
+            };
             } else {
                 this.upgradeTank.disabled = true; 
-            }
+            };
         }
 
         scrapCounter(context) {
