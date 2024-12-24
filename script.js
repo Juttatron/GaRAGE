@@ -26,6 +26,31 @@ window.addEventListener('load', function(){
                 }
                 console.log(this.game.keys);
             });
+
+            let touchStartY = 0;
+            let touchEndY = 0;
+
+            canvas.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            });
+
+            canvas.addEventListener('touchend', (e) => {
+                touchEndY = e.changedTouches[0].clientY;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                const swipeThreshold = 50; // Minimum distance for a swipe to register
+                const swipeDistance = touchEndY - touchStartY;
+
+                if (swipeDistance < -swipeThreshold) {
+                    game.player.swipeUp();
+                } else if (swipeDistance > swipeThreshold) {
+                    game.player.swipeDown();
+                }
+            }
+
+
         }
     }
 
@@ -56,13 +81,14 @@ window.addEventListener('load', function(){
             this.maxFrame = 2;
             this.fps = 0;
             this.image = document.getElementById('car');
-            this.defaultFuel = 100;
-            this.fuel = this.defaultFuel;
-            this.armour = 0;
-            this.seats = 0;
-            this.tank = 0;
-            this.engine = 0;
-            this.tires = 0;
+            this.defaultFuel = 50;
+            this.fuel = 0;
+            this.armour = 1;
+            this.seats = 1;
+            this.tank = 1;
+            this.engine = 1;
+            this.tires = 1;
+            this.oppositeLevel = 6;
             this.scrap = 0; 
             this.drivingOn = true; // Flag to check if the car is driving on
             this.driveSpeed = 2; // Speed at which the car enters the screen
@@ -89,10 +115,6 @@ window.addEventListener('load', function(){
                 }
             }
 
-            if (this.fuel < 1) {
-                this.fuel = 0;//this.fuel = this.defaultFuel; // (re)move this later
-            }
-
             const targetY = this.calculateLaneCenterY(this.targetLane);
             if (Math.abs(this.y - targetY) > this.laneSpeed) {
                 this.y += this.y < targetY ? this.laneSpeed : -this.laneSpeed;
@@ -112,11 +134,7 @@ window.addEventListener('load', function(){
             else {
                 this.frameX = 0;
                 this.fuel += -1;
-                console.log("Player Distance Before:" + this.distance);
-                console.log("gameSpeed:" + this.game.speed);
-                console.log("deltaTime:" + deltaTime);
-                this.distance += this.game.speed * deltaTime / 10; // Convert to seconds
-                console.log("Player Distance After:" + this.distance);
+                this.distance += this.game.speed * deltaTime / 10; 
             }
         }
 
@@ -143,6 +161,18 @@ window.addEventListener('load', function(){
                 this.moving = true; // Start movement
             }
         }
+
+        swipeUp() {
+            if (this.y > 0) {
+                this.moveUp();
+            }
+        }
+        
+        swipeDown() {
+            if (this.y < (canvas.height - this.height)) {
+                this.moveDown();
+            }
+        }
     }
 
     class Mutant {
@@ -157,7 +187,6 @@ window.addEventListener('load', function(){
             this.markedForDeletion = false;
             this.smooshed = false;
             this.dead = false;
-            //this.scrap = 2;
             this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
             this.y = this.calculateLaneCenterY(this.lane);
         }
@@ -208,7 +237,6 @@ window.addEventListener('load', function(){
             this.type = 'ugly';
             this.width = 100;
             this.height = 60;
-            //this.y = Math.random() * (this.game.height * 0.9 - this.height);
             this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
             this.y = this.calculateLaneCenterY(this.lane);
             this.maxFrame = 0;
@@ -242,7 +270,17 @@ window.addEventListener('load', function(){
                 if (!this.collected) {
                     console.log("Old Fuel: " + this.player.fuel);
                     this.collected = true;
-                    this.player.fuel += this.fuel;
+                    
+                    const fuelToAdd = this.fuel; // Total fuel to add
+                    const increment = 1; // Amount added per step
+                    const delay = 10 / game.speed; 
+
+                    for (let addedFuel = 0; addedFuel < fuelToAdd; addedFuel += increment) {
+                        setTimeout(() => {
+                            this.player.fuel += increment;
+                            console.log("Updated Fuel: " + this.player.fuel);
+                        }, delay * addedFuel); // Delay each step to simulate gradual addition
+                    }
                     console.log("New Fuel: " + this.player.fuel);
                 }
             }
@@ -362,6 +400,9 @@ window.addEventListener('load', function(){
             context.fillStyle = "rgba(" + (this.player.fuel+1000) + ",0, 0, 1)";
             context.fillRect(this.fuelGuageX, 10, this.player.fuel, 30);
             context.fillText("Fuel", this.fuelGuageX - 60, 40);
+            context.fillStyle = "white";
+            context.font = "30px " + this.fontFamily;
+            context.fillText(this.player.fuel, this.fuelGuageX + 25, 35);
 
             //scrapCounter
             context.font = this.fontSize*2 + "px " + this.fontFamily;
@@ -373,10 +414,11 @@ window.addEventListener('load', function(){
             this.trackerHeight = 20;
             this.trackerX = (canvas.width - ((canvas.width/100)*20));
             this.trackerY = 25;
+            this.distanceLeft = Math.floor(this.game.stageDistance - this.currentDistance);
             context.fillStyle = 'orange';
-            context.fillText("Stage 1:", this.trackerX - 80, 40);
+            context.fillText("Stage 1:", this.trackerX - 90, 40);
             context.fillRect(this.trackerX, this.trackerY, this.trackerWidth, this.trackerHeight);
-            
+            context.fillText(this.distanceLeft, this.trackerX + this.trackerWidth + 40, 40);
 
             // Distance tracker icon
             this.progress = (this.currentDistance / this.game.stageDistance) * this.trackerWidth;
@@ -395,10 +437,7 @@ window.addEventListener('load', function(){
         }
 
         updateDistance(newDistance) {
-            console.log("newDist:" + newDistance);
-            console.log("currentDistance Before: " + this.currentDistance);
             this.currentDistance = Math.min(newDistance, this.game.stageDistance); // Cap at total distance
-            console.log("currentDistance After: " + this.currentDistance);
         }
 
         storyScroll(context) {
@@ -448,17 +487,43 @@ window.addEventListener('load', function(){
             this.scrapCount = document.getElementById('scrapCount');
             this.cHeight = canvas.height; // Start from bottom of the canvas
             this.lines = []; // Array to store wrapped lines
+            this.upgradeTank = document.getElementById('upgradeTank');
         }
         
         draw(context) {
             context.clearRect(0, 0, this.game.width, this.game.height);
             context.fillStyle = "blue";
             context.fillRect(0, 0, game.width, game.height);
+            
+            //Scrap count
             context.font = this.fontSize*2 + "px " + this.fontFamily;
             context.fillStyle = "lightgreen";
             //context.textAlign = "left";
             context.fillText("Scrap:" + game.currentScrap, 100, 40);
-            //this.scrapCounter(context);
+            
+            //Fuel tank upgrade.
+            this.upgradeTankCost = 50 * game.player.tank;
+            context.fillStyle = "White";
+            context.fillRect(30, 50, 150, 50);
+            context.fillStyle = "black";
+            context.fillText("Tank:" + game.player.tank, 100, 90);
+            context.fillText("Cost:" + this.upgradeTankCost, 300, 90);
+
+            // Dynamically position the upgradeTank button
+            this.upgradeTank.style.position = 'absolute'; 
+            this.upgradeTank.style.left = `${canvas.offsetLeft + 20}px`; 
+            this.upgradeTank.style.top = `${canvas.offsetTop + 50}px`; 
+            this.upgradeTank.style.display = 'block';
+            // Position the upgrade button
+            if (game.player.scrap >= this.upgradeTankCost) {
+            this.upgradeTank.disabled = false;            
+            this.upgradeTank.onclick = function() {
+                game.player.tank += 1;
+                game.player.scrap += -50;
+            }
+            } else {
+                this.upgradeTank.disabled = true; 
+            }
         }
 
         scrapCounter(context) {
@@ -480,7 +545,43 @@ window.addEventListener('load', function(){
         draw(context) {
             this.UI.storyScroll(context);
         }
+
+        storyScroll(context) {
+            const x = canvas.width * 0.5;
+            const y = 50;
+            const paraWidth = canvas.width - 400;
+            const lineHeight = 40;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = this.fontSize*2 + "px " + this.fontFamily;
+            context.fillStyle = "yellow";
+            context.textAlign = "center";
+            const storyP1 = "10 years ago, an extinction level event called \“The Eruption\” sent civilization spiralling into a post-apocalyptic nightmare.";
+            this.wrapText(ctx, storyP1, x, y, paraWidth, lineHeight);
+            const storyP2 = "Geysers of an ancient undiscovered ooze exploded from the ground with volcanic force, throwing thick avalanches of toxic lava and full plumes of mutagenic poison almost everywhere.";
+            this.wrapText(ctx, storyP2, x, y*4, paraWidth, lineHeight);
+            const storyP3 = "The survivors must fight for scrap and keep moving in a world overrun by mutant monsters using every ounce of metal and mettle to reach the end of the road…";
+            this.wrapText(ctx, storyP3, x, y*8, paraWidth, lineHeight);
+        }
+
+        wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            
+            words.forEach(word => {
+                const testLine = line + word + ' ';
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    ctx.fillText(line, x, y); // Draw the line
+                    line = word + ' '; // Start a new line
+                    y += lineHeight; // Move down to the next line
+                } else {
+                    line = testLine; // Add word to the current line
+                }
+            });
+        
+        ctx.fillText(line, x, y); // Draw the last line
+        }
     }
+
 
     class Game {
         constructor(width, height) {
@@ -522,14 +623,13 @@ window.addEventListener('load', function(){
                mutant.update();
                if (this.checkCollision(this.player, mutant) && (this.player.currentLane == mutant.lane)) {
                     mutant.smooshed = true;
-                    //this.player.scrap += mutant.scrap;
                } 
             });
             this.mutants = this.mutants.filter(mutant => !mutant.markedForDeletion);
             if (this.mutantTimer > this.mutantInterval && !this.gameOver) {
                 this.addMutant();
                 this.mutantTimer = 0;
-                //console.log(this.mutants);
+                console.log(this.mutants);
             }
             else {
                 this.mutantTimer += deltaTime;
@@ -539,20 +639,17 @@ window.addEventListener('load', function(){
                 container.update();
                 if (this.checkCollision(this.player, container) && (this.player.currentLane == container.lane)) {
                      container.collecting = true;
-                     //this.player.scrap += mutant.scrap;
                 } 
              });
              this.fuelContainers = this.fuelContainers.filter(container => !container.markedForDeletion);
              if (this.fuelContainerTimer > this.fuelContainerInterval && !this.gameOver) {
                  this.addFuelContainer();
                  this.fuelContainerTimer = 0;
-                 console.log("Containers: " + this.fuelContainers);
              }
              else {
                  this.fuelContainerTimer += deltaTime;
              }
-             console.log("Distance:" + this.player.distance);
-            this.RoadUI.updateDistance(this.player.distance);
+            this.RoadUI.updateDistance(this.player.distance / (this.player.oppositeLevel - this.player.engine));
             this.checkFuel() 
         }
 
@@ -648,7 +745,8 @@ window.addEventListener('load', function(){
                     // Transition to running state after fade-out
                     game.gameState = "running";
                     game.runEnded = false;
-                    game.player.fuel = game.player.defaultFuel;
+                    game.player.drivingOn = true;
+                    game.player.fuel = game.player.defaultFuel * game.player.tank;
                     game.player.distance = 0;
                     animate(0); // Start the main game loop
                 });
@@ -659,12 +757,6 @@ window.addEventListener('load', function(){
             }
     
             fadeAndStartGame();
-        
-
-            //game.gameState = "running";
-            //game.runEnded = false;
-            //game.player.fuel = game.player.defaultFuel;
-            //animate(0);
         };
     }
 
@@ -674,7 +766,6 @@ window.addEventListener('load', function(){
         // delta time
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        //console.log(deltaTime);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         game.update(deltaTime);
         game.draw(ctx);
@@ -683,7 +774,6 @@ window.addEventListener('load', function(){
         }
         else if (game.gameState === "garage") {
             cancelAnimationFrame(animationFrameId);
-            
         }
     }
 

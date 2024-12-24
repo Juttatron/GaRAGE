@@ -147,3 +147,7 @@ button:hover {
 #uglyMutant, #uglyMutantSmooshed {
     display: none;
 }
+
+#upgradeTank {
+    display: none;
+}
