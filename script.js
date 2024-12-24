@@ -5,11 +5,13 @@ window.addEventListener('load', function(){
     canvas.width = 1500;
     canvas.height = 500;
 
+    //Get GO! button
     const closeStoryButton = document.getElementById("closeStoryButton");
 
     class InputHandler {
         constructor(game) {
             this.game = game;
+            //Keyboard controls
             //Listen for player to press up or down arrow keys
             window.addEventListener('keydown', e => {
                 if (((e.key === 'ArrowUp') || (e.key === 'ArrowDown'))
@@ -26,33 +28,32 @@ window.addEventListener('load', function(){
                 }
                 console.log(this.game.keys);
             });
-
+            //Touch swipe controls
             let touchStartY = 0;
             let touchEndY = 0;
-
+            //Listens for player to start touching the canvas
             canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent page scrolling
+                e.preventDefault(); // Prevent browser motion on swipe
                 touchStartY = e.touches[0].clientY;
             });
-
+            //Listens for player to stop touching the canvas
             canvas.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Prevent page scrolling
+                e.preventDefault(); // Prevent browser motion on swipe
                 touchEndY = e.changedTouches[0].clientY;
                 handleSwipe();
             });
+        }
 
-            function handleSwipe() {
-                const swipeThreshold = 50; // Minimum distance for a swipe to register
-                const swipeDistance = touchEndY - touchStartY;
-
-                if (swipeDistance < -swipeThreshold) {
-                    game.player.swipeUp();
-                } else if (swipeDistance > swipeThreshold) {
-                    game.player.swipeDown();
-                }
+        //Check touch difference and distance.
+        handleSwipe() {
+            const swipeThreshold = 50; //Minimum distance difference to consider as swipe.
+            const swipeDistance = touchEndY - touchStartY;
+            //Check swipe direction.
+            if (swipeDistance < -swipeThreshold) {
+                game.player.swipeUp();
+            } else if (swipeDistance > swipeThreshold) {
+                game.player.swipeDown();
             }
-
-
         }
     }
 
