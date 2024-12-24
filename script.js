@@ -31,10 +31,12 @@ window.addEventListener('load', function(){
             let touchEndY = 0;
 
             canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent page scrolling
                 touchStartY = e.touches[0].clientY;
             });
 
             canvas.addEventListener('touchend', (e) => {
+                e.preventDefault(); // Prevent page scrolling
                 touchEndY = e.changedTouches[0].clientY;
                 handleSwipe();
             });
