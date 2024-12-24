@@ -64,6 +64,7 @@
     height: auto; /* Maintain aspect ratio */
     max-height: 100%; /* Prevent it from overflowing the container */
     display: block; /* Ensures no extra space added below canvas */
+    touch-action: none; /* Prevent browser scrolling.
 }
 
 #gameplaylist {
