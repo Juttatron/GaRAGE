@@ -40,7 +40,7 @@ window.addEventListener('load', function(){
             canvas.addEventListener('touchend', (e) => {
                 e.preventDefault(); // Prevent browser motion on swipe
                 touchEndY = e.changedTouches[0].clientY;
-                handleSwipe();
+                this.handleSwipe();
             });
         }
 
