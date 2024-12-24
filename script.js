@@ -11,8 +11,8 @@ window.addEventListener('load', function(){
     class InputHandler {
         constructor(game) {
             this.game = game;
-            //Keyboard controls
-            //Listen for player to press up or down arrow keys
+            //Keyboard controls.
+            //Listen for player to press up or down arrow keys.
             window.addEventListener('keydown', e => {
                 if (((e.key === 'ArrowUp') || (e.key === 'ArrowDown'))
                     && this.game.keys.indexOf(e.key) === -1) {
@@ -24,21 +24,21 @@ window.addEventListener('load', function(){
             window.addEventListener('keyup', e => {
                 if (this.game.keys.indexOf(e.key) > -1) {
                     this.game.keys.splice(this.game.keys.indexOf(e.key), 1);
-                    game.player.moving = false; // Stop player lane changing on key release
+                    game.player.moving = false; // Stop player lane changing on key release.
                 }
                 console.log(this.game.keys);
             });
-            //Touch swipe controls
+            //Touch swipe controls.
             let touchStartY = 0;
             let touchEndY = 0;
-            //Listens for player to start touching the canvas
+            //Listens for player to start touching the canvas.
             canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent browser motion on swipe
+                e.preventDefault(); // Prevent browser motion on swipe.
                 touchStartY = e.touches[0].clientY;
             });
-            //Listens for player to stop touching the canvas
+            //Listens for player to stop touching the canvas.
             canvas.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Prevent browser motion on swipe
+                e.preventDefault(); // Prevent browser motion on swipe.
                 touchEndY = e.changedTouches[0].clientY;
                 handleSwipe();
             });
