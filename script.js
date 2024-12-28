@@ -47,14 +47,14 @@ window.addEventListener('load', function(){
                 const swipeDistance = touchEndY - touchStartY;
                 //Check swipe direction.
                 if (swipeDistance < -swipeThreshold) {
-                    game.player.swipeUp();
                     if (!this.game.keys.includes('ArrowUp')) {
                         this.game.keys.push('ArrowUp');
+                        game.player.swipeUp();
                     }
-                } else if (swipeDistance > swipeThreshold) {
-                    game.player.swipeDown();
+                } else if (swipeDistance > swipeThreshold) {               
                     if (!this.game.keys.includes('ArrowDown')) {
                         this.game.keys.push('ArrowDown');
+                        game.player.swipeDown();
                     }
                 }
             }
