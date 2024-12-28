@@ -18,7 +18,6 @@ window.addEventListener('load', function(){
                     && this.game.keys.indexOf(e.key) === -1) {
                     this.game.keys.push(e.key);
                 }
-                console.log(this.game.keys);
             });
             //Listen for player to stop pressing up or down arroe keys.
             window.addEventListener('keyup', e => {
@@ -26,7 +25,6 @@ window.addEventListener('load', function(){
                     this.game.keys.splice(this.game.keys.indexOf(e.key), 1);
                     game.player.moving = false; // Stop player lane changing on key release.
                 }
-                console.log(this.game.keys);
             });
             //Touch swipe controls.
             let touchStartY = 0;
@@ -67,54 +65,53 @@ window.addEventListener('load', function(){
     class Player {
         constructor(game) {
             this.game = game;
-            this.width = 190;
-            this.height = 120;
-            this.x = -this.width; // Start off-screen
-            this.initialX = 100; // Drive to here
-            this.currentLane = 2; // Start in the middle lane (lane index 2)
-            this.targetLane = this.currentLane;
-            this.y = this.calculateLaneCenterY(this.currentLane); // Calculate initial y position
-            this.laneSpeed = 2;
-            this.changingLane = false;
-            this.speedy = 0;
-            this.speedx = 0;
-            this.frameX = 0;
-            this.frameY = 0;
-            this.maxFrame = 2;
-            this.fps = 0;
             this.image = document.getElementById('car');
-            this.defaultFuel = 50;
-            this.fuel = 0;
+            this.spriteW = 340;
+            this.spriteH = 120;
+            this.renderW = this.spriteW / 2;
+            this.renderH = this.spriteH / 2;
+            this.width = this.renderW; //Sprite frame width.
+            this.height = this.renderH; //Sprite frame height.
+            this.x = -this.renderW; //Start off-screen.
+            this.drivingOnToX = 100; //Auto-drive to here.
+            this.drivingOn = true; //Flag to check if Player is driving onto screen before taking control.
+            this.drivingOnSpeed = 2; //Speed of driving onto screen animation.
+            this.currentLane = 2; //Start in the middle lane.
+            this.targetLane = this.currentLane;
+            this.y = this.calculateLaneCenterY(this.currentLane); //Calculate initial lane central y position.
+            this.laneSpeed = 2; //Speed when changing lanes.
+            this.changingLane = false; //Flag to set when Player is actively changing lanes.
+            this.frameX = 0; //Sprite sheet start position of frame on X.
+            this.frameY = 0; //Sprite sheet start position of frame on Y.
+            this.maxFrame = 2; //Total number of frames in sprite sheet animation.
+            this.fps = 0; //Initialise first animation frame.    
             this.armour = 1;
             this.seats = 1;
             this.tank = 1;
             this.engine = 1;
             this.tires = 1;
-            this.oppositeLevel = 6;
-            this.scrap = 0; 
-            this.drivingOn = true; // Flag to check if the car is driving on
-            this.driveSpeed = 2; // Speed at which the car enters the screen
-            this.distance = 0;
+            this.oppositeLevel = 6; //Used when stat is divided or subtracted instead of multiplied or added.
+            this.scrap = 0; //Initialise current amount of collected scrap remaining.
+            this.distance = 0;//Initialise current distance travelled.
+            this.defaultFuel = 50; //Initialise Player fuel amount.
+            this.maxFuel = this.defaultFuel * this.tank; 
+            this.fuel = 0; //
         }
 
         update(deltaTime) {
             if (this.drivingOn) {
-                this.x += this.driveSpeed; // Move the car onto the screen
-                if (this.x >= this.initialX) {
-                    this.x = this.initialX; // Stop at the starting position
+                this.x += this.drivingOnSpeed; // Move the car onto the screen
+                if (this.x >= this.drivingOnToX) {
+                    this.x = this.drivingOnToX; // Stop at the starting position
                     this.drivingOn = false; // Set the flag to false once the car is on screen
                 }
             } else {
                 if (this.game.keys.includes('ArrowUp') && (this.y > 0)) {
                     this.moveUp();
                 }
-                else if (this.game.keys.includes('ArrowDown') && (this.y < (canvas.height - this.height))) {
+                else if (this.game.keys.includes('ArrowDown') && (this.y < (canvas.height - this.renderH))) {
                     this.moveDown();
-                } else {
-                    // Continue normal movement after the vehicle is fully on screen
-                    this.y += this.speedy;
-                    this.x += this.speedx;
-                }
+                } 
             }
 
             const targetY = this.calculateLaneCenterY(this.targetLane);
@@ -141,7 +138,7 @@ window.addEventListener('load', function(){
         }
 
         draw(context) {
-            context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, this.frameX * this.spriteW, this.frameY * this.spriteH, this.spriteW, this.spriteH, this.x, this.y, this.renderW, this.renderH);
         }
 
         calculateLaneCenterY(laneIndex) {
@@ -200,6 +197,10 @@ window.addEventListener('load', function(){
                 if (!this.dead) {
                     this.dead = true;
                     this.player.scrap += this.scrap;
+                    if (this.type === "ugly") {
+                        this.game.uglyMutantsSmooshed += 1;
+                        console.log("ugly smooshed: " + this.game.uglyMutantsSmooshed)
+                    }
                 }
             }
 
@@ -218,10 +219,10 @@ window.addEventListener('load', function(){
 
         draw(context) {
             if (this.smooshed) {
-                context.drawImage(this.imageSmooshed, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height); 
+                context.drawImage(this.imageSmooshed, this.frameX * this.spriteW, this.frameY * this.spriteH, this.spriteW, this.spriteH, this.x, this.y, this.renderW, this.renderH); 
             }
             else {
-                context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+                context.drawImage(this.image, this.frameX * this.spriteW, this.frameY * this.spriteH, this.spriteW, this.spriteH, this.x, this.y, this.renderW, this.renderH);
             }    
         }
 
@@ -237,14 +238,37 @@ window.addEventListener('load', function(){
         constructor(game) {
             super(game);
             this.type = 'ugly';
-            this.width = 100;
-            this.height = 60;
+            this.spriteW = 200;
+            this.spriteH = 100;
+            this.renderW = this.spriteW / 2;
+            this.renderH = this.spriteH /2;
+            this.width = this.renderW;
+            this.height = this.renderH;
             this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
             this.y = this.calculateLaneCenterY(this.lane);
             this.maxFrame = 0;
             this.image = document.getElementById('uglyMutant');
             this.imageSmooshed = document.getElementById('uglyMutantSmooshed');
             this.scrap = Math.floor(Math.random() * 3) + 1;
+        }
+    }
+
+    class grossMutant extends Mutant {
+        constructor(game) {
+            super(game);
+            this.type = 'gross';
+            this.spriteW = 200;
+            this.spriteH = 100;
+            this.renderW = this.spriteW / 2;
+            this.renderH = this.spriteH /2;
+            this.width = this.renderW;
+            this.height = this.renderH;
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
+            this.maxFrame = 0;
+            this.image = document.getElementById('grossMutant');
+            this.imageSmooshed = document.getElementById('grossMutantSmooshed');
+            this.scrap = Math.floor(Math.random() * (9 - 6 + 1) + 6);
         }
     }
 
@@ -431,10 +455,11 @@ window.addEventListener('load', function(){
             //End run message
             if (this.game.runEnded) {
                 context.textAlign = "center";
+                context.fillStyle = 'lightgreen';
                 let message1 = "Out of Fuel";
                 let message2 = "Scrap:" + this.player.scrap;
-                context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5 - 40);
-                context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 40);
+                context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5);
+                context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 50);
             }
         }
 
@@ -614,6 +639,7 @@ window.addEventListener('load', function(){
             //this.fuel = 100;
             this.stageDistance = 500;
             //this.totalDistance;
+            this.uglyMutantsSmooshed = 0;
         }
         
 
@@ -672,7 +698,12 @@ window.addEventListener('load', function(){
         }
 
         addMutant() {
+            if (this.uglyMutantsSmooshed === 6) {
+                this.mutants.push(new grossMutant(this));
+                this.uglyMutantsSmooshed = 0;
+            } else {
             this.mutants.push(new uglyMutant(this));
+            }
         }
 
         addFuelContainer() {

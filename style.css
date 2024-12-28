@@ -145,7 +145,7 @@ button:hover {
     display: none;
 }
 
-#uglyMutant, #uglyMutantSmooshed {
+#uglyMutant, #uglyMutantSmooshed, #grossMutant, #grossMutantSmooshed {
     display: none;
 }
 
