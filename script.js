@@ -163,13 +163,13 @@ window.addEventListener('load', function(){
         }
 
         swipeUp() {
-            if (this.y > 0) {
+            if (!this.drivingOn && this.y > 0) {
                 this.moveUp();
             }
         }
         
         swipeDown() {
-            if (this.y < (canvas.height - this.height)) {
+            if (!this.drivingOn && this.y < (canvas.height - this.height)) {
                 this.moveDown();
             }
         }
