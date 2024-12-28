@@ -40,6 +40,7 @@ window.addEventListener('load', function(){
                 touchEndY = e.changedTouches[0].clientY;
                 handleSwipe();
             });
+
             //Check touch difference and distance.
             function handleSwipe() {
                 const swipeThreshold = 50; // Minimum distance difference to consider as swipe.
@@ -47,8 +48,14 @@ window.addEventListener('load', function(){
                 //Check swipe direction.
                 if (swipeDistance < -swipeThreshold) {
                     game.player.swipeUp();
+                    if (!this.game.keys.includes('ArrowUp')) {
+                        this.game.keys.push('ArrowUp');
+                    }
                 } else if (swipeDistance > swipeThreshold) {
                     game.player.swipeDown();
+                    if (!this.game.keys.includes('ArrowDown')) {
+                        this.game.keys.push('ArrowDown');
+                    }
                 }
             }
         }
