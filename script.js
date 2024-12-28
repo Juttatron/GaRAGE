@@ -355,6 +355,102 @@ window.addEventListener('load', function(){
         }
     }
 
+    class Obstacle {
+        constructor(game) {
+            this.game = game;
+            this.player = this.game.player;
+            this.x = this.game.width;
+            this.frameX = 0;
+            this.frameY = 0;
+            this.fps = 0;
+            this.speedx = 1 * -1.5 - 0.5;
+            this.markedForDeletion = false;
+            this.hit = false;
+            this.struck = false;
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
+        }
+
+        update() {
+            this.x += this.speedx;
+            if (this.x + this.width < 0) this.markedForDeletion = true;
+            if (this.hit) {
+                if (!this.struck) {
+                    this.struck = true;
+                    this.player.fuel -= this.fuelCost;
+                    const randomMove = Math.random() < 0.5 ? 'up' : 'down';
+                    console.log("Position: " + this.player.currentLane);
+                    console.log("choice: " + randomMove);
+                    if (randomMove === 'up') {
+                        if (!this.player.currentLane === 0) {
+                        this.player.moveUp();
+                        } else {
+                            this.player.moveDown();
+                        }
+                    }
+                    if (randomMove === 'down') {
+                        if (!this.player.currentLane === 4) {
+                        this.player.moveDown();
+                        } else {
+                            this.player.moveUp();
+                        }
+                    }
+                    console.log("Moved: " + this.player.currentLane); 
+                    if (this.type === "rock") {
+                        this.game.rockObstaclesStruck += 1;
+                        console.log("rocks struck: " + this.game.rockObstaclesStruck)
+                    }
+                }
+            }
+
+            if (this.frameX < this.maxFrame){
+                this.fps++;
+                if (this.fps === 8) {
+                    this.frameX++;
+                    this.fps = 0; 
+                } 
+            }
+            else {
+                this.frameX = 0;
+                //this.fuel += -1;
+            }
+        }
+
+        draw(context) {
+            if (this.hit) {
+                context.drawImage(this.imageHit, this.frameX * this.spriteW, this.frameY * this.spriteH, this.spriteW, this.spriteH, this.x, this.y, this.renderW, this.renderH); 
+            }
+            else {
+                context.drawImage(this.image, this.frameX * this.spriteW, this.frameY * this.spriteH, this.spriteW, this.spriteH, this.x, this.y, this.renderW, this.renderH);
+            }    
+        }
+
+        calculateLaneCenterY(laneIndex) {
+            //const canvas = this.game.canvas;
+            const laneStartY = canvas.height * 0.4;
+            const laneHeight = canvas.height * 0.6 / 5;
+            return laneStartY + (laneHeight * laneIndex) + (laneHeight / 2) - (this.height / 2);
+        }
+    }
+
+    class ObstacleRock extends Obstacle {
+        constructor(game) {
+            super(game);
+            this.type = 'rock';
+            this.spriteW = 100;
+            this.spriteH = 100;
+            this.renderW = this.spriteW / 2;
+            this.renderH = this.spriteH / 2;
+            this.width = this.renderW;
+            this.height = this.renderH;
+            this.lane = Math.floor(Math.random() * 5); // Random lane index (0-4)
+            this.y = this.calculateLaneCenterY(this.lane);
+            this.maxFrame = 0;
+            this.image = document.getElementById('obstacleRock');
+            this.imageHit = document.getElementById('obstacleRockHit');
+            this.fuelCost = 10; //Math.floor(Math.random() * 3) + 1;
+        }
+    }
 
     class Layer {
         constructor(game, image, speedModifier) {
@@ -641,6 +737,10 @@ window.addEventListener('load', function(){
             this.stageDistance = 500;
             //this.totalDistance;
             this.uglyMutantsSmooshed = 0;
+            this.rockObstaclesStruck = 0;
+            this.obstacles = [];
+            this.obstacleTimer = 0;
+            this.obstacleInterval = 1000;
         }
         
 
@@ -679,6 +779,21 @@ window.addEventListener('load', function(){
              else {
                  this.fuelContainerTimer += deltaTime;
              }
+             //Spawn obstacles
+            this.obstacles.forEach(obstacle => { 
+                obstacle.update();
+                if (this.checkCollision(this.player, obstacle) && (this.player.currentLane == obstacle.lane)) {
+                     obstacle.hit = true;
+                } 
+             });
+             this.obstacles = this.obstacles.filter(obstacle => !obstacle.markedForDeletion);
+             if (this.obstacleTimer > this.obstacleInterval && !this.gameOver) {
+                 this.addObstacle();
+                 this.obstacleTimer = 0;
+             }
+             else {
+                 this.obstacleTimer += deltaTime;
+             }
             this.RoadUI.updateDistance(this.player.distance / (this.player.oppositeLevel - this.player.engine));
             this.checkFuel() 
         }
@@ -692,6 +807,10 @@ window.addEventListener('load', function(){
             //Draw fuel containers
             this.fuelContainers.forEach(container => { 
                 container.draw(context); 
+             });
+             //Draw fuel containers
+            this.obstacles.forEach(obstacle => { 
+                obstacle.draw(context); 
              });
              this.player.draw(context);
              this.BG.foreGround.draw(context);
@@ -711,6 +830,10 @@ window.addEventListener('load', function(){
             this.fuelContainers.push(new FuelCan(this));
         }
 
+        addObstacle() {
+            this.obstacles.push(new ObstacleRock(this));
+        }
+
         checkCollision(rect1, rect2) {
             return (
                 rect1.x < rect2.x + rect2.width && 
@@ -721,7 +844,7 @@ window.addEventListener('load', function(){
         }
 
         checkFuel() {
-            if (this.player.fuel == 0) {
+            if (this.player.fuel <= 0) {
                 this.gameState = "paused";
                 this.runEnded = true;
                 this.currentScrap = this.player.scrap;
