@@ -58,7 +58,7 @@
 
 #canvas1 {
     border: 5px solid blue;
-    background: lightblue;
+    background: black;
     width: 100%; /* Adjust as needed */
     max-width: 1000px; /* Optional: Set a maximum width */
     height: auto; /* Maintain aspect ratio */
